@@ -10,14 +10,18 @@ class CreateController
     public function __construct(array $modelBinding, string $controllerPath)
     {
         $this->modelBinding = $modelBinding;
-        $this->controllerPath = str_replace('/', '\\', $controllerPath);
+        if ($controllerPath === '') {
+            $this->controllerPath = '';
+        } else {
+            $this->controllerPath = '\\' . str_replace('/', '\\', $controllerPath);
+        }
     }
 
     public function generate(): string
     {
         return "<?php
 
-namespace App\Http\Controllers\api\\{$this->controllerPath};
+namespace App\Http\Controllers\api$this->controllerPath;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\\{$this->modelBinding['className']}\\{$this->modelBinding['className']}StoreRequest;

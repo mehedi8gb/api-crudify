@@ -26,7 +26,7 @@ class ApiCrudifyCommand extends Command
         $controllerNameWithoutSuffix = $this->formatControllerName($controllerName);
         $controllerPath = $this->getControllerPath($controllerName);
         $modelBinding = $this->getModelBinding($controllerNameWithoutSuffix);
-        $controllerFileName = app_path("Http/Controllers/api/{$controllerPath}/{$controllerNameWithoutSuffix}.php");
+        $controllerFileName = app_path("Http/Controllers/api{$controllerPath}/{$controllerNameWithoutSuffix}.php");
 
         $this->createDirectoryIfNotExists($controllerFileName);
         $this->deleteExistingFile($controllerFileName);
@@ -179,7 +179,8 @@ class ApiCrudifyCommand extends Command
     {
         $segments = explode('/', $name);
         array_pop($segments);
-        return implode('/', $segments);
+        if (count($segments) == 0) return '';
+        return '/'.implode('/', $segments);
     }
 
     private function getModelBinding(string $controllerName): array
