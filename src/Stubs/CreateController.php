@@ -36,7 +36,7 @@ class {$this->modelBinding['className']}Controller extends Controller
     // Display a listing of the resource.
     public function index()
     {
-        return {$this->modelBinding['className']}ResourceCollection::collection({$this->modelBinding['className']}::get());
+        return new {$this->modelBinding['className']}ResourceCollection(({$this->modelBinding['className']}::get()));
     }
 
     // Store a newly created resource in storage.

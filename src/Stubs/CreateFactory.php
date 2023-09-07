@@ -33,7 +33,7 @@ class {$this->modelBinding}Factory extends Factory
     {
         return [
             'title' => \$this->faker->title(),
-            'description' => \$this->faker->description(),
+            'description' => \$this->faker->text(),
             'created_at' => now(),
             'updated_at' => now(),
         ];
