@@ -37,9 +37,6 @@ Install Laravel CRUDify in your Laravel project using Composer:
 
 ```bash
 composer require mehedi8gb/api-crudify
-
-```bash
-composer test
 ```
 ## Usages
 
