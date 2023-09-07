@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Mehedi8gb\ApiCrudify\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ApiCrudifyCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'api-crudify';
 
     public $description = 'My command';
 
