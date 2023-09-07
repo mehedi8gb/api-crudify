@@ -2,9 +2,16 @@
     "name": "mehedi8gb/api-crudify",
     "description": "This is my package api-crudify",
     "keywords": [
-        "mehedi8gb",
         "laravel",
-        "api-crudify"
+        "crud",
+        "api",
+        "package",
+        "crudify",
+        "api-crudify",
+        "mehedi8gb",
+        "generator",
+        "laravel-package",
+        "for api project"
     ],
     "homepage": "https://github.com/mehedi8gb/api-crudify",
     "license": "MIT",
