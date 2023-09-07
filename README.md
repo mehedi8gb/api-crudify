@@ -46,6 +46,12 @@ To use Api CRUDify, run the following Artisan command:
 php artisan crudify:make YourControllerName
 ```
 
+To export api schema for postman, run the following Artisan command:
+
+```bash
+php artisan crudify:make YourControllerName --export-api-schema
+```
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
