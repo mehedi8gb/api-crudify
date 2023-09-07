@@ -11,13 +11,13 @@
 
 **Description:**
 
-Laravel CRUDify is a powerful Laravel package designed to simplify the process of creating CRUD (Create, Read, Update, Delete) operations in your Laravel applications. With Laravel CRUDify, you can quickly generate API controllers, models, form request classes, migrations, and more, allowing you to focus on building your application's core functionality instead of writing repetitive boilerplate code.
+Api CRUDify is a powerful Laravel package designed to simplify the process of creating CRUD (Create, Read, Update, Delete) operations in your Laravel applications. With Api CRUDify, you can quickly generate API controllers, models, form request classes, migrations, and more, allowing you to focus on building your application's core functionality instead of writing repetitive boilerplate code.
 
 ## Key Features
 
 - **Effortless CRUD Generation:** Create fully functional CRUD components with a single Artisan command, reducing development time and effort.
 
-- **Customizable Templates:** Laravel CRUDify provides customizable stub templates, enabling you to tailor generated code to your project's specific needs.
+- **Customizable Templates:** Api CRUDify provides customizable stub templates, enabling you to tailor generated code to your project's specific needs.
 
 - **Model-Controller-Route Integration:** Automatically generates API routes for your controllers, ensuring seamless integration with your Laravel application.
 
@@ -29,18 +29,18 @@ Laravel CRUDify is a powerful Laravel package designed to simplify the process o
 
 - **Factory Integration:** Easily integrate model factories into your application's seeders for realistic data seeding.
 
-- **Laravel Best Practices:** Laravel CRUDify follows Laravel's best practices and coding standards, ensuring code quality and maintainability.
+- **Laravel Best Practices:** Api CRUDify follows Laravel's best practices and coding standards, ensuring code quality and maintainability.
 
 ## Installation
 
-Install Laravel CRUDify in your Laravel project using Composer:
+Install Api CRUDify in your Laravel project using Composer:
 
 ```bash
-composer require mehedi8gb/api-crudify
+composer require mehedi8gb/api-crudify --dev
 ```
 ## Usages
 
-To use Laravel CRUDify, run the following Artisan command:
+To use Api CRUDify, run the following Artisan command:
 
 ```bash
 php artisan crudify:make YourControllerName
