@@ -4,15 +4,8 @@
     "version": "1.0.0",
     "keywords": [
         "mehedi8gb",
-        "api-crudify",
         "laravel",
-        "crud",
-        "api",
-        "package",
-        "crudify",
-        "generator",
-        "laravel-package",
-        "for api project"
+        "api-crudify"
     ],
     "homepage": "https://github.com/mehedi8gb/api-crudify",
     "license": "MIT",
