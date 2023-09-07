@@ -5,7 +5,10 @@
     "keywords": [
         "mehedi8gb",
         "laravel",
-        "api-crudify"
+        "api-crudify",
+        "api",
+        "crud",
+        "generate-api-crud"
     ],
     "homepage": "https://github.com/mehedi8gb/api-crudify",
     "license": "MIT",
@@ -21,7 +24,6 @@
         "spatie/laravel-package-tools": "^1.14.0"
     },
     "require-dev": {
-        "mehedi8gb/api-crudify": "1.0.0",
         "laravel/pint": "^1.0",
         "nunomaduro/collision": "^7.8",
         "nunomaduro/larastan": "^2.0.1",
