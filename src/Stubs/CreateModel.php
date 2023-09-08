@@ -20,6 +20,10 @@ class CreateModel
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class {$this->modelBinding} extends Model
 {
 use SoftDeletes, HasFactory, Sluggable;
