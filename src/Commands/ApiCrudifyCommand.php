@@ -14,7 +14,6 @@ use Illuminate\Support\Str;
 
 class ApiCrudifyCommand extends Command
 {
-
     protected $signature = 'crudify:make {name} {--export-api-schema}';
     protected $description = 'Create a new CRUD controller with related components';
     protected array $hasFile = [
@@ -34,7 +33,8 @@ class ApiCrudifyCommand extends Command
         $controllerNameWithoutSuffix = $this->formatControllerName($controllerName);
         $controllerPath = str_replace('/', '', $this->getControllerPath($controllerName));
         $modelBinding = $this->getModelBinding($controllerNameWithoutSuffix);
-        $controllerFileName = str_replace('//|\\\\', "/", app_path("Http/Controllers/api/{$controllerPath}/{$controllerNameWithoutSuffix}.php"));
+        $controllerFileName = str_replace('//|\\\\', "/",
+            app_path("Http/Controllers/api/{$controllerPath}/{$controllerNameWithoutSuffix}.php"));
 
         $this->createDirectoryIfNotExists($controllerFileName);
         $this->hasFile['controller'] = $this->isFileExists($controllerFileName);
@@ -75,6 +75,11 @@ class ApiCrudifyCommand extends Command
         } else if (in_array(true, $this->hasFile, true)) {
             $this->info("\n<fg=bright-yellow>Some of those files already exist.</>");
             $this->info("and some of those files created successfully.");
+            $exportApiSchema = $this->option('export-api-schema');
+              if ($exportApiSchema) {
+                $this->call('optimize:clear');
+                $this->call('export:postman');
+            }
         } else {
             $this->info("\nCRUD created successfully!");
             $exportApiSchema = $this->option('export-api-schema');
