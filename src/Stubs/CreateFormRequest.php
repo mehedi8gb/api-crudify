@@ -22,7 +22,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class {$this->modelBinding['className']}StoreRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): void
     {
         return true; // Authorization logic goes here (e.g., check if the user has permission)
     }
@@ -88,7 +88,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class {$this->modelBinding['className']}UpdateRequest extends FormRequest
 {
-    public function authorize()
+    public function authorize(): void
     {
         return true; // Authorization logic goes here (e.g., check if the user has permission)
     }
