@@ -6,10 +6,12 @@ class CreateResource
 {
 
     private array $modelBinding;
+    private mixed $modelBindingLower;
 
     public function __construct(array $modelBinding)
     {
         $this->modelBinding = $modelBinding;
+        $this->modelBindingLower = strtolower($modelBinding['className']);
     }
 
     public function generateResource(): string
@@ -30,9 +32,9 @@ class {$this->modelBinding['className']}Resource extends JsonResource
             'description' => \$this->description,
             'created_at' => \$this->created_at->format('d-m-Y'),
             'links' => [
-                'show' => route('post.show', \$this->slug),
-                'update' => route('post.update', \$id),
-                'delete' => route('post.destroy', \$id),
+                'show' => route('{$this->modelBindingLower}.show', \$this->slug),
+                'update' => route('{$this->modelBindingLower}.update', \$id),
+                'delete' => route('{$this->modelBindingLower}.destroy', \$id),
             ]
         ];
     }
