@@ -36,26 +36,26 @@ class {$this->modelBinding['className']}Controller extends Controller
     // Display a listing of the resource.
     public function index()
     {
-        return new {$this->modelBinding['className']}ResourceCollection(({$this->modelBinding['className']}::get()));
+        return {$this->modelBinding['className']}ResourceCollection::make(({$this->modelBinding['className']}::paginate()));
     }
 
     // Store a newly created resource in storage.
     public function store({$this->modelBinding['className']}StoreRequest \$request)
     {
-         return new {$this->modelBinding['className']}Resource({$this->modelBinding['className']}::create(\$request->validated()));
+        return {$this->modelBinding['className']}Resource::make({$this->modelBinding['className']}::create(\$request->validated()));
     }
 
     // Display the specified resource.
     public function show({$this->modelBinding['className']} {$this->modelBinding['classVar']})
     {
-        return new {$this->modelBinding['className']}Resource({$this->modelBinding['classVar']});
+        return {$this->modelBinding['className']}Resource::make({$this->modelBinding['classVar']});
     }
 
     // Update the specified resource in storage.
     public function update({$this->modelBinding['className']}UpdateRequest \$request, {$this->modelBinding['className']} {$this->modelBinding['classVar']})
     {
         {$this->modelBinding['classVar']}->update(\$request->validated());
-        return new {$this->modelBinding['className']}Resource({$this->modelBinding['classVar']});
+        return {$this->modelBinding['className']}Resource::make({$this->modelBinding['classVar']});
     }
 
     // Remove the specified resource from storage.

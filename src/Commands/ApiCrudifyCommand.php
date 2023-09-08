@@ -280,10 +280,16 @@ class ApiCrudifyCommand extends Command
     {
         $routeContent = file_get_contents($routeFileName);
         if (
-            str_contains($routeContent, "Route::apiResource('{$routeName}', {$controllerClass}::class);")
+            str_contains($routeContent, "Route::prefix('{$routeName}')->group(function () {")
         ) return;
 
-        $routeContent .= "\nRoute::apiResource('{$routeName}', {$controllerClass}::class);";
+        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {\n
+            Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');\n
+            Route::get('show/{slug}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');\n
+            Route::post('store/{{$routeName}}', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');\n
+            Route::put('update/{{$routeName}}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');\n
+            Route::delete('destroy/{{$routeName}}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');\n
+        });\n";
         file_put_contents($routeFileName, $routeContent);
     }
 

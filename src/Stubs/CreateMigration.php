@@ -14,7 +14,7 @@ class CreateMigration
         $this->modelBinding = strtolower($modelBinding['className']);
     }
 
-    public function generate()
+    public function generate(): string
     {
         return "<?php
 
@@ -30,8 +30,9 @@ return new class extends Migration {
     {
         Schema::create('{$this->modelBinding}', function (Blueprint \$table) {
             \$table->id();
-            \$table->string('title');
-            \$table->string('description');
+            \$table->binary('title');
+            \$table->longText('description');
+            \$table->string('slug')->unique();
             \$table->softDeletes();
             \$table->timestamps();
         });

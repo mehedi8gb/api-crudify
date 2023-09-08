@@ -5,11 +5,13 @@ namespace Mehedi8gb\ApiCrudify\Stubs;
 class CreateModel
 {
 
-    private array $modelBinding;
+    private string $modelBinding;
+    private string $modelBindingLower;
 
     public function __construct(array $modelBinding)
     {
-        $this->modelBinding = $modelBinding;
+        $this->modelBinding = $modelBinding['className'];
+        $this->modelBindingLower = strtolower($modelBinding['className']) . 's';
     }
 
     public function generate(): string
@@ -18,21 +20,19 @@ class CreateModel
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
-class {$this->modelBinding['className']} extends Model
+class {$this->modelBinding} extends Model
 {
-    use SoftDeletes, HasFactory;
+use SoftDeletes, HasFactory, Sluggable;
 
-    protected \$table = '{$this->modelBinding['className']}'; // Table name if different from model name
+    protected \$table = '{$this->modelBindingLower}'; // Table name if different from model name
 
     protected \$primaryKey = 'id'; // Primary key field
 
     protected \$fillable = [
-        'name',
+        'title',
         'description',
+        'slug',
+        //'image'
         // Add other attributes that can be mass-assigned here
     ];
 
@@ -40,17 +40,30 @@ class {$this->modelBinding['className']} extends Model
         // 'admin_only_field', // Add attributes that should not be mass-assigned here
     ];
 
-    protected \$dates = [
+    protected array \$dates = [
         'created_at',
         'updated_at',
-        // Add other date fields here
+        // dates is an array of fields that should be cast to dates
     ];
 
     protected \$casts = [
+        'title' => 'encrypted', // Cast 'title' attribute to encrypted
+        'description' => 'encrypted',
+        'slug' => 'encrypted',
         // 'price' => 'decimal:2', // Cast 'price' attribute to a decimal with 2 decimal places
         // 'is_active' => 'boolean', // Cast 'is_active' attribute to boolean
         // Add other attribute casting here
     ];
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => ['title', 'id'], // Generate slug from 'title' and 'id' attributes
+                'onUpdate' => true,          // Regenerate slug when the title is updated
+            ],
+        ];
+    }
 }
         ";
     }

@@ -21,6 +21,7 @@
     "require": {
         "php": "^8.1",
         "andreaselia/laravel-api-to-postman": "^1.15",
+        "cviebrock/eloquent-sluggable": "^10.0",
         "spatie/laravel-package-tools": "^1.14.0"
     },
     "require-dev": {

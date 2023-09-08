@@ -52,6 +52,29 @@ To export api schema for postman, run the following Artisan command:
 php artisan crudify:make YourControllerName --export-api-schema
 ```
 
+After running the command, Api CRUDify will generate the following files:
+
+- **Controller:** `app/Http/Controllers/YourControllerNameController.php`
+- **Model:** `app/Models/YourControllerName.php`
+- **Form Request:** `app/Http/Requests/YourControllerNameStoreRequest.php`
+- **Form Request:** `app/Http/Requests/YourControllerNameUpdateRequest.php`
+- **Resource:** `app/Http/Resources/YourControllerNameResource.php`
+- **Resource Collection:** `app/Http/Resources/YourControllerNameResourceCollection.php`
+- **Migration:** `database/migrations/2021_01_01_000000_create_your_controller_names_table.php`
+- **Factory:** `database/factories/YourControllerNameFactory.php`
+- **Seeder:** `database/seeders/YourControllerNameSeeder.php`
+- **Route:** `routes/api.php`
+
+Now you can run the following command to migrate your database:
+
+```bash
+php artisan migrate --seed
+```
+
+## Features
+
+your request will be passed with end to end validation, encryption, and authentication. You can also export the api schema for postman and many more.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

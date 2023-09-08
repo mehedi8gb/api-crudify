@@ -24,10 +24,16 @@ class {$this->modelBinding['className']}Resource extends JsonResource
 {
     public function toArray(Request \$request): array
     {
+        \$id = \$this->id;
         return [
             'title' => \$this->title,
             'description' => \$this->description,
-            'created_at' => \$this->created_at,
+            'created_at' => \$this->created_at->format('d-m-Y'),
+            'links' => [
+                'show' => route('post.show', \$this->slug),
+                'update' => route('post.update', \$id),
+                'delete' => route('post.destroy', \$id),
+            ]
         ];
     }
 }
@@ -47,7 +53,7 @@ class {$this->modelBinding['className']}ResourceCollection extends ResourceColle
     public function toArray(Request \$request): array
     {
         return [
-            'data' => new {$this->modelBinding['className']}Resource(\$this->collection),
+            'data' => {$this->modelBinding['className']}Resource::collection(\$this->collection),
         ];
     }
 }
