@@ -2,14 +2,14 @@
 
 namespace Mehedi8gb\ApiCrudify\Commands;
 
-use Mehedi8gb\ApiCrudify\Stubs\CreateController;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+use Mehedi8gb\ApiCrudify\Stubs\CreateController;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFactory;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFormRequest;
 use Mehedi8gb\ApiCrudify\Stubs\CreateMigration;
 use Mehedi8gb\ApiCrudify\Stubs\CreateModel;
 use Mehedi8gb\ApiCrudify\Stubs\CreateResource;
-use Illuminate\Support\Str;
 
 
 class ApiCrudifyCommand extends Command
@@ -76,7 +76,7 @@ class ApiCrudifyCommand extends Command
             $this->info("\n<fg=bright-yellow>Some of those files already exist.</>");
             $this->info("and some of those files created successfully.");
             $exportApiSchema = $this->option('export-api-schema');
-              if ($exportApiSchema) {
+            if ($exportApiSchema) {
                 $this->call('optimize:clear');
                 $this->call('export:postman');
             }
@@ -298,21 +298,27 @@ class ApiCrudifyCommand extends Command
         file_put_contents($routeFileName, $routeContent);
     }
 
-    private
-    function addUseStatementToRoutesFile(string $routeFileName, string $useStatement): bool
+    private function addUseStatementToRoutesFile(string $routeFileName, string $useStatement): bool
     {
         $routeContent = file_get_contents($routeFileName);
-        $routeUseStatement = str_replace('//|\\\\', '/', $useStatement);
+        $routeUseStatement = str_replace('\\\\', '\\', $useStatement);
+
+        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\api\\\\([a-zA-Z\\\\]+Controller);/';
+
+        preg_match($pattern, $routeContent, $matches);
 
         // Check if the use statement already exists
-        if (!str_contains($routeContent, $routeUseStatement)) {
+        if (!str_contains($matches[0], $routeUseStatement)) {
             // Insert the use statement at the top of the file
-            $routeContent = preg_replace('/<\?php/', "<?php\n{$routeUseStatement}", $routeContent, 1);
+            $routeContent = preg_replace(
+                '/<\?php/',
+                "<?php\n{$routeUseStatement}",
+                $routeContent,
+                1
+            );
             return file_put_contents($routeFileName, $routeContent);
         }
         return false;
     }
-
-
 }
 
