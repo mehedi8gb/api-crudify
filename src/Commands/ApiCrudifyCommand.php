@@ -175,7 +175,7 @@ class ApiCrudifyCommand extends Command
 
         $routeName = Str::kebab($modelBinding['className']);
         $this->addApiResourceRoute($routeFileName, $routeName, $controllerPath, "{$controllerNameWithoutSuffix}");
-        $result = $this->addUseStatementToRoutesFile($routeFileName, "use App\Http\Controllers\api\\{$controllerPath}\\{$controllerNameWithoutSuffix};");
+        $result = $this->addUseStatementToRoutesFile($modelBinding['className'], $routeFileName, "use App\Http\Controllers\api\\{$controllerPath}\\{$controllerNameWithoutSuffix};");
         if ($result) {
             $this->info("\nRoute added: <fg=yellow>{$routeFileName}</>");
         } else {
@@ -298,17 +298,30 @@ class ApiCrudifyCommand extends Command
         file_put_contents($routeFileName, $routeContent);
     }
 
-    private function addUseStatementToRoutesFile(string $routeFileName, string $useStatement): bool
+    private function addUseStatementToRoutesFile(string $className, string $routeFileName, string $useStatement): bool
     {
         $routeContent = file_get_contents($routeFileName);
         $routeUseStatement = str_replace('\\\\', '\\', $useStatement);
 
-        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\api\\\\([a-zA-Z\\\\]+Controller);/';
+        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\api\\\\(([a-zA_Z\\\\]+)?([a-zA-Z]+)+Controller);/';
 
         preg_match($pattern, $routeContent, $matches);
 
         // Check if the use statement already exists
-        if (!str_contains($matches[0], $routeUseStatement)) {
+        if (!empty($matches)) {
+            if (str_contains($matches[0], $routeUseStatement) || str_contains($matches[3], $className)) {
+                return false;
+            } else {
+                // Insert the use statement at the top of the file
+                $routeContent = preg_replace(
+                    '/<\?php/',
+                    "<?php\n{$routeUseStatement}",
+                    $routeContent,
+                    1
+                );
+                return file_put_contents($routeFileName, $routeContent);
+            }
+        } else {
             // Insert the use statement at the top of the file
             $routeContent = preg_replace(
                 '/<\?php/',
