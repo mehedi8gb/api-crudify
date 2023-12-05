@@ -36,7 +36,7 @@ class {$this->modelBinding['className']}Controller extends Controller
     // Display a listing of the resource.
     public function index()
     {
-        return {$this->modelBinding['className']}ResourceCollection::make(({$this->modelBinding['className']}::paginate()));
+        return {$this->modelBinding['className']}ResourceCollection::make(({$this->modelBinding['className']}::get()));
     }
 
     // Store a newly created resource in storage.
@@ -46,8 +46,9 @@ class {$this->modelBinding['className']}Controller extends Controller
     }
 
     // Display the specified resource.
-    public function show({$this->modelBinding['className']} {$this->modelBinding['classVar']})
+    public function show(\$slug)
     {
+        {$this->modelBinding['classVar']} = {$this->modelBinding['className']}::where('slug', \$slug)->firstOrFail();
         return {$this->modelBinding['className']}Resource::make({$this->modelBinding['classVar']});
     }
 

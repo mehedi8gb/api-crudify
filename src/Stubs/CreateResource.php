@@ -21,6 +21,8 @@ namespace App\Http\Resources\\{$this->modelBinding['className']};
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Route;
 
 class {$this->modelBinding['className']}Resource extends JsonResource
 {
@@ -29,10 +31,13 @@ class {$this->modelBinding['className']}Resource extends JsonResource
         \$id = \$this->id;
         return [
             'title' => \$this->title,
-            'description' => \$this->description,
-            'created_at' => \$this->created_at->format('d-m-Y'),
+            'created_at' => Carbon::parse(\$this->created_at)->format('d-m-Y'),
             'links' => [
-                'show' => route('{$this->modelBindingLower}.show', \$this->slug),
+                'show' => \$this->unless(Route::currentRouteName() === '{$this->modelBindingLower}.show', function () {
+                    return route('{$this->modelBindingLower}.show', [
+                        'slug' => \$this->slug
+                    ]);
+                }),
                 'update' => route('{$this->modelBindingLower}.update', \$id),
                 'delete' => route('{$this->modelBindingLower}.destroy', \$id),
             ]
@@ -47,12 +52,11 @@ class {$this->modelBinding['className']}Resource extends JsonResource
         return "<?php
 namespace App\Http\Resources\\{$this->modelBinding['className']};
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class {$this->modelBinding['className']}ResourceCollection extends ResourceCollection
 {
-    public function toArray(Request \$request): array
+    public function toArray(\$request): array
     {
         return [
             'data' => {$this->modelBinding['className']}Resource::collection(\$this->collection),

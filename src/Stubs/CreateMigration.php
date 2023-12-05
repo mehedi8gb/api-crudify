@@ -31,7 +31,6 @@ return new class extends Migration {
         Schema::create('{$this->modelBinding}', function (Blueprint \$table) {
             \$table->id();
             \$table->binary('title');
-            \$table->longText('description');
             \$table->string('slug')->unique();
             \$table->softDeletes();
             \$table->timestamps();

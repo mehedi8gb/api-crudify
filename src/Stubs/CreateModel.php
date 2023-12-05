@@ -35,9 +35,7 @@ use SoftDeletes, HasFactory, Sluggable;
 
     protected \$fillable = [
         'title',
-        'description',
         'slug',
-        //'image'
         // Add other attributes that can be mass-assigned here
     ];
 
@@ -53,10 +51,6 @@ use SoftDeletes, HasFactory, Sluggable;
 
     protected \$casts = [
         'title' => 'encrypted', // Cast 'title' attribute to encrypted
-        'description' => 'encrypted',
-        'slug' => 'encrypted',
-        // 'price' => 'decimal:2', // Cast 'price' attribute to a decimal with 2 decimal places
-        // 'is_active' => 'boolean', // Cast 'is_active' attribute to boolean
         // Add other attribute casting here
     ];
 

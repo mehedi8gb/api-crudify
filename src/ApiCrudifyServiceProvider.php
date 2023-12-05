@@ -21,11 +21,11 @@ class ApiCrudifyServiceProvider extends PackageServiceProvider
         $package
             ->name('api-crudify')
             ->hasCommand(ApiCrudifyCommand::class);
-                LaravelServiceProvider::defaultProviders()->merge([
-                ApiCrudifyServiceProvider::class,
-                PostmanGeneratorServiceProvider::class,
-                ServiceProvider::class,
-            ]);
+//                LaravelServiceProvider::defaultProviders()->merge([
+//                ApiCrudifyServiceProvider::class,
+//                PostmanGeneratorServiceProvider::class,
+//                ServiceProvider::class,
+//            ]);
 
     }
 }

@@ -288,12 +288,12 @@ class ApiCrudifyCommand extends Command
             str_contains($routeContent, "Route::prefix('{$routeName}')->group(function () {")
         ) return;
 
-        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {\n
-            Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');\n
-            Route::get('show/{slug}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');\n
-            Route::post('store/{{$routeName}}', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');\n
-            Route::put('update/{{$routeName}}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');\n
-            Route::delete('destroy/{{$routeName}}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');\n
+        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {
+            Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');
+            Route::get('show/{slug}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');
+            Route::post('store', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');
+            Route::put('update/{{$routeName}}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');
+            Route::delete('destroy/{{$routeName}}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');
         });\n";
         file_put_contents($routeFileName, $routeContent);
     }
