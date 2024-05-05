@@ -1,26 +1,45 @@
-name: PHPStan
+name: Laravel Setup and Package Install
 
 on:
   push:
-    paths:
-      - '**.php'
-      - 'phpstan.neon.dist'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  phpstan:
-    name: phpstan
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          coverage: none
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
 
-      - name: Install composer dependencies
-        uses: ramsey/composer-install@v2
+    - name: Install Composer Dependencies
+      run: |
+        composer install --no-interaction --prefer-dist
 
-      - name: Run PHPStan
-        run: ./vendor/bin/phpstan --error-format=github
+    - name: Install Laravel
+      run: |
+        composer create-project laravel/laravel temp-laravel --prefer-dist
+
+    - name: Navigate to Temporary Laravel App Directory
+      run: |
+        cd temp-laravel
+
+    - name: Install mehedi8gb/api-crudify Package
+      run: |
+        cd ..  # Navigate back to the repository root
+        composer require mehedi8gb/api-crudify --dev
+
+    - name: Run Laravel Tests
+      run: |
+        cd temp-laravel  # Navigate to Laravel app directory
+        php artisan test
