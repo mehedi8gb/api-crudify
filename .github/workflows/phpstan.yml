@@ -22,10 +22,6 @@ jobs:
       with:
         php-version: '8.2'
 
-    - name: Install Composer Dependencies
-      run: |
-        composer install --no-interaction --prefer-dist
-
     - name: Install Laravel
       run: |
         composer create-project laravel/laravel temp-laravel --prefer-dist
