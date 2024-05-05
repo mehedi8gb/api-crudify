@@ -1,19 +1,43 @@
-  on: [push]
-  jobs:
-    phpstan:
-      name: phpstan
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
+name: Laravel Setup and Package Install
 
-        - name: Setup PHP
-          uses: shivammathur/setup-php@v2
-          with:
-            php-version: '8.1'
-            coverage: none
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-        - name: Install composer dependencies
-          uses: composer require mehedi8gb/api-crudify --dev
+jobs:
+  build:
 
-        - name: Run PHPStan
-          run: ./vendor/bin/phpstan --error-format=github
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+
+    - name: Install Composer Dependencies
+      run: |
+        composer install --no-interaction --prefer-dist
+
+    - name: Install Laravel
+      run: |
+        composer create-project laravel/laravel temp-laravel --prefer-dist
+
+    - name: Navigate to Temporary Laravel App Directory
+      run: |
+        cd temp-laravel
+
+    - name: Install mehedi8gb/api-crudify Package
+      run: |
+        composer require mehedi8gb/api-crudify --dev
+
+    - name: Run Laravel Tests
+      run: |
+        php artisan test
