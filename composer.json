@@ -1,13 +1,21 @@
 {
     "name": "mehedi8gb/api-crudify",
-    "description": "This is my package api-crudify",
-    "keywords": [
-        "mehedi8gb",
+    "description": "Automate CRUD operations for Laravel APIs.",
+       "keywords": [
         "laravel",
-        "api-crudify",
         "api",
         "crud",
-        "generate-api-crud"
+        "restful",
+        "laravel api crud",
+        "laravel crud generator",
+        "laravel restful api",
+        "laravel api automation",
+        "laravel package development",
+        "laravel api development",
+        "laravel package",
+        "laravel development tools",
+        "laravel php framework",
+        "laravel web services"
     ],
     "homepage": "https://github.com/mehedi8gb/api-crudify",
     "license": "MIT",
@@ -15,7 +23,7 @@
         {
             "name": "MD Mehedi Hasan",
             "email": "mehidy.gb@gmail.com",
-            "role": "Engineer"
+            "role": "Web Engineer"
         }
     ],
     "require": {
