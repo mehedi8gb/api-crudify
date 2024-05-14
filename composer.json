@@ -89,7 +89,8 @@
             ],
             "aliases": {
                 "ApiCrudify": "Mehedi8gb\\ApiCrudify\\Facades\\ApiCrudify"
-            }
+            },
+            "min-laravel-version": "11.x"
         }
     },
     "minimum-stability": "dev",
