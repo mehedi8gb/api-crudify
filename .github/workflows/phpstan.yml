@@ -22,9 +22,10 @@ jobs:
       with:
         php-version: '8.2'
 
-    - name: Install Laravel
+    - name: Install Laravel v10
       run: |
-        composer create-project laravel/laravel temp-laravel --prefer-dist
+        composer create-project laravel/laravel temp-laravel "10.*" --prefer-dist
+
 
     - name: Navigate to Temporary Laravel App Directory
       run: |
