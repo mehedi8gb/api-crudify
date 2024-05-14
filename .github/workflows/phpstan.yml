@@ -20,11 +20,11 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.2'
+        php-version: '8.3'
 
-    - name: Install Laravel v10
+    - name: Install Laravel v11
       run: |
-        composer create-project laravel/laravel temp-laravel "10.*" --prefer-dist
+        composer create-project laravel/laravel temp-laravel "11.*" --prefer-dist
 
 
     - name: Navigate to Temporary Laravel App Directory
