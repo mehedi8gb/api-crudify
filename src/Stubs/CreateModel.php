@@ -39,10 +39,6 @@ use SoftDeletes, HasFactory, Sluggable;
         // Add other attributes that can be mass-assigned here
     ];
 
-    protected \$guarded = [
-        // 'admin_only_field', // Add attributes that should not be mass-assigned here
-    ];
-
     protected array \$dates = [
         'created_at',
         'updated_at',
