@@ -1,6 +1,9 @@
 {
     "name": "mehedi8gb/api-crudify",
     "description": "Automate CRUD operations for Laravel APIs.",
+    "version": "2.0.3",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
        "keywords": [
         "laravel",
         "api",
@@ -92,7 +95,5 @@
             },
             "min-laravel-version": "11.x"
         }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
