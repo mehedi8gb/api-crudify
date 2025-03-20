@@ -36,13 +36,17 @@ class {$this->modelBinding['className']}Controller extends Controller
     // Display a listing of the resource.
     public function index()
     {
-        return {$this->modelBinding['className']}ResourceCollection::make(({$this->modelBinding['className']}::get()));
+        return {$this->modelBinding['className']}ResourceCollection::make(
+            ({$this->modelBinding['className']}::get())
+        );
     }
 
     // Store a newly created resource in storage.
     public function store({$this->modelBinding['className']}StoreRequest \$request)
     {
-        return {$this->modelBinding['className']}Resource::make({$this->modelBinding['className']}::create(\$request->validated()));
+        return {$this->modelBinding['className']}Resource::make(
+            {$this->modelBinding['className']}::create(\$request->validated())
+        );
     }
 
     // Display the specified resource.
