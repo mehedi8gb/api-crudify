@@ -22,9 +22,9 @@ jobs:
       with:
         php-version: '8.3'
 
-    - name: Install Laravel v11
+    - name: Install Laravel v12
       run: |
-        composer create-project laravel/laravel temp-laravel "11.*" --prefer-dist
+        composer create-project laravel/laravel temp-laravel "12.*" --prefer-dist
 
 
     - name: Navigate to Temporary Laravel App Directory
