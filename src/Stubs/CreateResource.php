@@ -30,36 +30,8 @@ class {$this->modelBinding['className']}Resource extends JsonResource
     {
         \$id = \$this->id;
         return [
-            'title' => \$this->title,
-            'created_at' => Carbon::parse(\$this->created_at)->format('d-m-Y'),
-            'links' => [
-                'show' => \$this->unless(Route::currentRouteName() === '{$this->modelBindingLower}.show', function () {
-                    return route('{$this->modelBindingLower}.show', [
-                        'slug' => \$this->slug
-                    ]);
-                }),
-                'update' => route('{$this->modelBindingLower}.update', \$id),
-                'delete' => route('{$this->modelBindingLower}.destroy', \$id),
-            ]
-        ];
-    }
-}
-        ";
-    }
-
-    public function generateResourceCollection(): string
-    {
-        return "<?php
-namespace App\Http\Resources\\{$this->modelBinding['className']};
-
-use Illuminate\Http\Resources\Json\ResourceCollection;
-
-class {$this->modelBinding['className']}ResourceCollection extends ResourceCollection
-{
-    public function toArray(\$request): array
-    {
-        return [
-            'data' => {$this->modelBinding['className']}Resource::collection(\$this->collection),
+            'title' => \$this->resource->title,
+            'created_at' => getFormatedDate(\$this->resource->created_at)
         ];
     }
 }

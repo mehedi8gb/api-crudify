@@ -33,8 +33,11 @@ class ApiCrudifyCommand extends Command
         $controllerNameWithoutSuffix = $this->formatControllerName($controllerName);
         $controllerPath = str_replace('/', '', $this->getControllerPath($controllerName));
         $modelBinding = $this->getModelBinding($controllerNameWithoutSuffix);
-        $controllerFileName = str_replace('//|\\\\', "/",
-            app_path("Http/Controllers/api/{$controllerPath}/{$controllerNameWithoutSuffix}.php"));
+        $controllerFileName = str_replace(
+            '//|\\\\',
+            "/",
+            app_path("Http/Controllers/V1/{$controllerPath}/{$controllerNameWithoutSuffix}.php")
+        );
 
         $this->createDirectoryIfNotExists($controllerFileName);
         $this->hasFile['controller'] = $this->isFileExists($controllerFileName);
@@ -99,8 +102,7 @@ class ApiCrudifyCommand extends Command
 
     private function isFileExists(string $controllerFileName): bool
     {
-        if (file_exists($controllerFileName)
-        ) return true;
+        if (file_exists($controllerFileName)) return true;
         return false;
     }
 
@@ -146,7 +148,6 @@ class ApiCrudifyCommand extends Command
     {
         $resourceDirectory = app_path("Http/Resources/{$modelBinding['className']}");
         $resourceFileName = "{$resourceDirectory}/{$modelBinding['className']}Resource.php";
-        $resourceCollectionFileName = "{$resourceDirectory}/{$modelBinding['className']}ResourceCollection.php";
 
         $this->createDirectoryIfNotExists($resourceFileName);
         $this->hasFile['resource'] = $this->isFileExists($resourceFileName);
@@ -157,15 +158,6 @@ class ApiCrudifyCommand extends Command
         } else {
             $this->info("\nResource already exists: <fg=red>{$resourceFileName}</>");
         }
-
-        $this->hasFile['resourceCollection'] = $this->isFileExists($resourceCollectionFileName);
-        if (!$this->hasFile['resourceCollection']) {
-            $resourceCollectionContent = (new CreateResource($modelBinding))->generateResourceCollection();
-            file_put_contents($resourceCollectionFileName, $resourceCollectionContent);
-            $this->info("\nResource collection created: <fg=yellow>{$resourceCollectionFileName}</>");
-        } else {
-            $this->info("\nResource collection already exists: <fg=red>{$resourceCollectionFileName}</>");
-        }
     }
 
     private function updateRoutesFile(array $modelBinding, string $controllerPath, string $controllerNameWithoutSuffix): void
@@ -175,7 +167,7 @@ class ApiCrudifyCommand extends Command
 
         $routeName = Str::kebab($modelBinding['className']);
         $this->addApiResourceRoute($routeFileName, $routeName, $controllerPath, "{$controllerNameWithoutSuffix}");
-        $result = $this->addUseStatementToRoutesFile($modelBinding['className'], $routeFileName, "use App\Http\Controllers\api\\{$controllerPath}\\{$controllerNameWithoutSuffix};");
+        $result = $this->addUseStatementToRoutesFile($modelBinding['className'], $routeFileName, "use App\Http\Controllers\V1\\{$controllerPath}\\{$controllerNameWithoutSuffix};");
         if ($result) {
             $this->info("\nRoute added: <fg=yellow>{$routeFileName}</>");
         } else {
@@ -239,7 +231,8 @@ class ApiCrudifyCommand extends Command
         }
 
         if (!str_contains($databaseSeederContent, "{$modelBinding['className']}::factory()->count(10)->create();")) {
-            $databaseSeederContent = preg_replace('/public\s+function\s+run\s*\(\s*\): void\s*{/',
+            $databaseSeederContent = preg_replace(
+                '/public\s+function\s+run\s*\(\s*\): void\s*{/',
                 "public function run(): void\n    {\n        {$modelBinding['className']}::factory()->count(10)->create();",
                 $databaseSeederContent,
                 1
@@ -249,7 +242,6 @@ class ApiCrudifyCommand extends Command
         } else {
             $this->info("\nSeeder already exists in the DatabaseSeeder class: <fg=red>{$databaseSeederFileName}</>");
         }
-
     }
 
     // helper functions start here
@@ -303,7 +295,7 @@ class ApiCrudifyCommand extends Command
         $routeContent = file_get_contents($routeFileName);
         $routeUseStatement = str_replace('\\\\', '\\', $useStatement);
 
-        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\api\\\\(([a-zA_Z\\\\]+)?([a-zA-Z]+)+Controller);/';
+        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\V1\\\\(([a-zA_Z\\\\]+)?([a-zA-Z]+)+Controller);/';
 
         preg_match($pattern, $routeContent, $matches);
 
@@ -334,4 +326,3 @@ class ApiCrudifyCommand extends Command
         return false;
     }
 }
-
