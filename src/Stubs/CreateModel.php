@@ -26,7 +26,8 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class {$this->modelBinding} extends Model
 {
-use SoftDeletes, HasFactory, Sluggable;
+use SoftDeletes, HasFactory;
+//use Sluggable;
 
     protected \$table = '{$this->modelBindingLower}'; // Table name if different from model name
 
@@ -38,26 +39,19 @@ use SoftDeletes, HasFactory, Sluggable;
         // Add other attributes that can be mass-assigned here
     ];
 
-    protected array \$dates = [
-        'created_at',
-        'updated_at',
-        // dates is an array of fields that should be cast to dates
-    ];
-
     protected \$casts = [
-        'title' => 'encrypted', // Cast 'title' attribute to encrypted
         // Add other attribute casting here
     ];
 
-    public function sluggable(): array
-    {
-        return [
-            'slug' => [
-                'source' => ['title', 'id'], // Generate slug from 'title' and 'id' attributes
-                'onUpdate' => true,          // Regenerate slug when the title is updated
-            ],
-        ];
-    }
+//    public function sluggable(): array
+//    {
+//        return [
+//            'slug' => [
+//                'source' => ['title', 'id'], // Generate slug from 'title' and 'id' attributes
+//                'onUpdate' => true,          // Regenerate slug when the title is updated
+//            ],
+//        ];
+//    }
 }
         ";
     }

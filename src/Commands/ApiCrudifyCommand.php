@@ -9,7 +9,9 @@ use Mehedi8gb\ApiCrudify\Stubs\CreateFactory;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFormRequest;
 use Mehedi8gb\ApiCrudify\Stubs\CreateMigration;
 use Mehedi8gb\ApiCrudify\Stubs\CreateModel;
+use Mehedi8gb\ApiCrudify\Stubs\CreateRepository;
 use Mehedi8gb\ApiCrudify\Stubs\CreateResource;
+use Mehedi8gb\ApiCrudify\Stubs\CreateService;
 
 
 class ApiCrudifyCommand extends Command
@@ -49,6 +51,10 @@ class ApiCrudifyCommand extends Command
         } else {
             $this->info("\nController already exists: <fg=red>{$controllerFileName}</>");
         }
+
+        $this->generateAndSaveService($modelBinding, $controllerPath);
+
+        $this->generateAndSaveRepository($modelBinding, $controllerPath);
 
         // Create and save model
         $this->generateAndSaveModel($modelBinding);
@@ -104,6 +110,39 @@ class ApiCrudifyCommand extends Command
     {
         if (file_exists($controllerFileName)) return true;
         return false;
+    }
+
+
+    private function generateAndSaveService(array $modelBinding, string $controllerPath): void
+    {
+        $serviceDirectory = app_path("Services/V1/{$controllerPath}");
+        $serviceFileName = "{$serviceDirectory}/{$modelBinding['className']}Service.php";
+
+        $this->createDirectoryIfNotExists($serviceFileName);
+
+        if (!file_exists($serviceFileName)) {
+            $serviceContent = (new CreateService($modelBinding, $controllerPath))->generate();
+            file_put_contents($serviceFileName, $serviceContent);
+            $this->info("\nService created: <fg=yellow>{$serviceFileName}</>");
+        } else {
+            $this->info("\nService already exists: <fg=red>{$serviceFileName}</>");
+        }
+    }
+
+    private function generateAndSaveRepository(array $modelBinding, string $controllerPath): void
+    {
+        $repositoryDirectory = app_path("Repositories/V1/{$controllerPath}");
+        $repositoryFileName = "{$repositoryDirectory}/{$modelBinding['className']}Repository.php";
+
+        $this->createDirectoryIfNotExists($repositoryFileName);
+
+        if (!file_exists($repositoryFileName)) {
+            $repositoryContent = (new CreateRepository($modelBinding, $controllerPath))->generate();
+            file_put_contents($repositoryFileName, $repositoryContent);
+            $this->info("\nRepository created: <fg=yellow>{$repositoryFileName}</>");
+        } else {
+            $this->info("\nRepository already exists: <fg=red>{$repositoryFileName}</>");
+        }
     }
 
     private function generateAndSaveModel(array $modelBinding): void

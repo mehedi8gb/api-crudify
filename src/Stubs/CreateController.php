@@ -20,10 +20,11 @@ class CreateController
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
-        $classVar = $this->modelBinding['classVar'];
         $classNameLower = strtolower($className);
         $classNamePlural = $this->pluralize($classNameLower);
         $classNamePluralTitle = ucfirst($classNamePlural);
+        $serviceClass = "{$className}Service";
+        $serviceVar = lcfirst($className);
 
         return "<?php
 
@@ -32,71 +33,80 @@ namespace App\Http\Controllers\V1$this->controllerPath;
 use App\Http\Requests\\{$className}\\{$className}StoreRequest;
 use App\Http\Requests\\{$className}\\{$className}UpdateRequest;
 use App\Http\Resources\\{$className}\\{$className}Resource;
-use App\Models\\{$className};
+use App\Services\V1$this->controllerPath\\{$serviceClass};
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class {$className}Controller extends Controller
 {
-    // Display a listing of the resource.
+    public function __construct(private readonly {$serviceClass} \$service) {}
+
     /**
      * @throws Exception
      */
-    public function index(Request \$request)
+    public function index()
     {
-        \$query = {$className}::query();
-        \$result = handleApiRequest(\$request, \$query);
-
-        return sendSuccessResponse('{$classNamePluralTitle} retrieved successfully', \$result, Response::HTTP_OK);
-    }
-
-    // Store a newly created resource in storage.
-    public function store({$className}StoreRequest \$request)
-    {
-        \$data = {$className}::create(\$request->validated());
-
+        \${$classNamePlural} = \$this->service->list{$classNamePluralTitle}();
         return sendSuccessResponse(
-            \"{$className} inserted successfully\",
-            {$className}Resource::make(\$data),
-            Response::HTTP_CREATED
-        );
-    }
-
-    // Display the specified resource.
-    public function show(\$slug)
-    {
-        {$classVar} = {$className}::where('slug', \$slug)->firstOrFail();
-
-        return sendSuccessResponse(
-            \"{$className} retrieved successfully\",
-            {$className}Resource::make({$classVar}),
+            '{$classNamePluralTitle} retrieved successfully',
+            \${$classNamePlural},
             Response::HTTP_OK
         );
     }
 
-    // Update the specified resource in storage.
-    public function update({$className}UpdateRequest \$request, {$className} {$classVar})
+    /**
+     * @throws Throwable
+     */
+    public function store({$className}StoreRequest \$request)
     {
-        {$classVar}->update(\$request->validated());
+        \${$serviceVar} = \$this->service->create{$className}(\$request->validated());
+
         return sendSuccessResponse(
-            '{$className} updated successfully',
-            {$className}Resource::make({$classVar}),
-            Response::HTTP_ACCEPTED
+            '{$className} created successfully',
+            new {$className}Resource(\${$serviceVar}),
+            Response::HTTP_CREATED
         );
     }
 
-    // Remove the specified resource from storage.
-    public function destroy({$className} {$classVar})
+    public function show(string \${$serviceVar}Id)
     {
-        {$classVar}->delete();
+        \${$serviceVar} = \$this->service->get{$className}(\${$serviceVar}Id);
+        if (! \${$serviceVar}) {
+            return sendErrorResponse('{$className} not found', Response::HTTP_NOT_FOUND);
+        }
 
         return sendSuccessResponse(
-            '{$className} deleted successfully',
-            [],
-            Response::HTTP_NO_CONTENT
+            '{$className} retrieved successfully',
+            new {$className}Resource(\${$serviceVar}),
+            Response::HTTP_OK
         );
+    }
+
+    public function update({$className}UpdateRequest \$request, string \${$serviceVar}Id)
+    {
+        try {
+            \${$serviceVar} = \$this->service->update{$className}(\${$serviceVar}Id, \$request->validated());
+
+            return sendSuccessResponse(
+                '{$className} updated successfully',
+                new {$className}Resource(\${$serviceVar}),
+                Response::HTTP_OK
+            );
+        } catch (Exception \$e) {
+            return sendErrorResponse(\$e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function destroy(string \${$serviceVar}Id)
+    {
+        try {
+            \$this->service->delete{$className}(\${$serviceVar}Id);
+            return sendSuccessResponse('{$className} deleted successfully', null, Response::HTTP_NO_CONTENT);
+        } catch (Exception \$e) {
+            return sendErrorResponse(\$e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
     }
 }
         ";
@@ -104,8 +114,7 @@ class {$className}Controller extends Controller
 
     private function pluralize(string $word): string
     {
-        // Simple pluralization logic
-        if (substr($word, -1) === 'y') {
+        if (str_ends_with($word, 'y')) {
             return substr($word, 0, -1) . 'ies';
         } elseif (in_array(substr($word, -1), ['s', 'x', 'z']) || in_array(substr($word, -2), ['ch', 'sh'])) {
             return $word . 'es';
