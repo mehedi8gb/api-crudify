@@ -132,16 +132,16 @@ class ApiCrudifyCommand extends Command
     private function generateAndSaveRepository(array $modelBinding, string $controllerPath): void
     {
         $repositoryDirectory = app_path("Repositories/V1/{$controllerPath}");
-        $repositoryFileName = "{$repositoryDirectory}/{$modelBinding['className']}Repository.php";
+        $repositoryFileName = "{$repositoryDirectory}/{$modelBinding['className']}BaseRepository.php";
 
         $this->createDirectoryIfNotExists($repositoryFileName);
 
         if (!file_exists($repositoryFileName)) {
             $repositoryContent = (new CreateRepository($modelBinding, $controllerPath))->generate();
             file_put_contents($repositoryFileName, $repositoryContent);
-            $this->info("\nRepository created: <fg=yellow>{$repositoryFileName}</>");
+            $this->info("\nBaseRepository created: <fg=yellow>{$repositoryFileName}</>");
         } else {
-            $this->info("\nRepository already exists: <fg=red>{$repositoryFileName}</>");
+            $this->info("\nBaseRepository already exists: <fg=red>{$repositoryFileName}</>");
         }
     }
 

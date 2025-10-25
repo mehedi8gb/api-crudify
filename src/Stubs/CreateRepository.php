@@ -28,7 +28,7 @@ namespace App\Repositories\V1$this->controllerPath;
 use App\Models\\{$className};
 use Illuminate\Database\Eloquent\Builder;
 
-class {$className}Repository
+class {$className}BaseRepository
 {
     public function query(): Builder
     {

@@ -20,10 +20,7 @@ class CreateFactory
         return "<?php
 namespace Database\Factories;
 
-use App\Models\\{$this->modelBinding};
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
+use ;{$this->modelBinding};
 
 class {$this->modelBinding}Factory extends Factory
 {

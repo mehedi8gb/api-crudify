@@ -23,7 +23,7 @@ class CreateService
         $classNameLower = strtolower($className);
         $classNamePlural = $this->pluralize($classNameLower);
         $classNamePluralTitle = ucfirst($classNamePlural);
-        $repositoryClass = "{$className}Repository";
+        $repositoryClass = "{$className}BaseRepository";
         $serviceVar = lcfirst($className);
 
         return "<?php
