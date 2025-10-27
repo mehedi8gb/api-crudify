@@ -2,7 +2,9 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateMigration
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateMigration extends BaseStub
 {
     private mixed $modelBinding;
 
@@ -29,11 +31,13 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('{$this->modelBinding}', function (Blueprint \$table) {
-            \$table->id();
-            \$table->binary('title');
+            \$table->id('{$this->modelBinding}Id');
+            \$table->string('title');
             \$table->string('slug')->unique();
-            \$table->softDeletes();
-            \$table->timestamps();
+            \$table->boolean('status')->default(true);
+            \$table->timestamp('createdAt')->nullable();
+            \$table->timestamp('updatedAt')->nullable();
+            \$table->timestamp('deletedAt')->nullable();
         });
     }
 

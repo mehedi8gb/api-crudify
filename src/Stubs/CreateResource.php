@@ -2,36 +2,38 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateResource
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateResource extends BaseStub
 {
-
     private array $modelBinding;
-    private mixed $modelBindingLower;
+    private string $namespace;
 
-    public function __construct(array $modelBinding)
+    public function __construct(array $modelBinding, string $domainPath)
     {
         $this->modelBinding = $modelBinding;
-        $this->modelBindingLower = strtolower($modelBinding['className']);
+        $this->namespace = str_replace('/', '\\', $domainPath);
     }
 
-    public function generateResource(): string
+    public function generate(): string
     {
+        $className = $this->modelBinding['className'];
+
         return "<?php
-namespace App\Http\Resources\\{$this->modelBinding['className']};
+
+namespace App\Http\Resources\\{$this->namespace}\\{$className};
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Route;
 
-class {$this->modelBinding['className']}Resource extends JsonResource
+class {$className}Resource extends JsonResource
 {
     public function toArray(Request \$request): array
     {
         \$id = \$this->id;
         return [
             'title' => \$this->resource->title,
-            'created_at' => getFormatedDate(\$this->resource->created_at)
+            'createdAt' => getFormatedDate(\$this->resource->created_at)
         ];
     }
 }

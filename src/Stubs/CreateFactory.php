@@ -2,34 +2,48 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateFactory
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateFactory extends BaseStub
 {
+    private array $modelBinding;
+    private string $namespace;
 
-    private mixed $modelBinding;
-
-    /**
-     * @param array $modelBinding
-     */
-    public function __construct(array $modelBinding)
+    public function __construct(array $modelBinding, string $domainPath)
     {
-        $this->modelBinding = $modelBinding['className'];
+        $this->modelBinding = $modelBinding;
+        $this->namespace = str_replace('/', '\\', $domainPath);
     }
 
     public function generate(): string
     {
+        $className = $this->modelBinding['className'];
+
         return "<?php
-namespace Database\Factories;
 
-use ;{$this->modelBinding};
+namespace Database\Factories\\{$this->namespace};
 
-class {$this->modelBinding}Factory extends Factory
+use App\Models\\{$this->namespace}\\{$className};
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<{$className}>
+ */
+class {$className}Factory extends Factory
 {
-    protected \$model = {$this->modelBinding}::class;
+    protected \$model = {$className}::class;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [
-            'title' => \$this->faker->title(),
+            'name' => fake()->words(3, true),
+            'slug' => fake()->unique()->slug(),
+            'status' => fake()->boolean(80),
         ];
     }
 }

@@ -4,364 +4,465 @@ namespace Mehedi8gb\ApiCrudify\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 use Mehedi8gb\ApiCrudify\Stubs\CreateController;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFactory;
+use Mehedi8gb\ApiCrudify\Stubs\CreateFeatureTest;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFormRequest;
 use Mehedi8gb\ApiCrudify\Stubs\CreateMigration;
 use Mehedi8gb\ApiCrudify\Stubs\CreateModel;
 use Mehedi8gb\ApiCrudify\Stubs\CreateRepository;
 use Mehedi8gb\ApiCrudify\Stubs\CreateResource;
+use Mehedi8gb\ApiCrudify\Stubs\CreateSeeder;
 use Mehedi8gb\ApiCrudify\Stubs\CreateService;
-
 
 class ApiCrudifyCommand extends Command
 {
     protected $signature = 'crudify:make {name} {--export-api-schema}';
-    protected $description = 'Create a new CRUD controller with related components';
+    protected $description = 'Create a new CRUD with Service-Repository pattern';
     protected array $hasFile = [
         'controller' => false,
         'model' => false,
         'formRequest' => false,
         'resource' => false,
-        'resourceCollection' => false,
         'migration' => false,
         'factory' => false,
         'seeder' => false,
+        'service' => false,
+        'repository' => false,
+        'test' => false,
     ];
 
     public function handle(): void
     {
-        $controllerName = $this->argument('name');
-        $controllerNameWithoutSuffix = $this->formatControllerName($controllerName);
-        $controllerPath = str_replace('/', '', $this->getControllerPath($controllerName));
-        $modelBinding = $this->getModelBinding($controllerNameWithoutSuffix);
-        $controllerFileName = str_replace(
-            '//|\\\\',
-            "/",
-            app_path("Http/Controllers/V1/{$controllerPath}/{$controllerNameWithoutSuffix}.php")
-        );
+        $fullPath = $this->argument('name');
 
-        $this->createDirectoryIfNotExists($controllerFileName);
-        $this->hasFile['controller'] = $this->isFileExists($controllerFileName);
+        // Parse: V1/Inventory/Specification -> ['V1/Inventory', 'Specification']
+        $pathParts = explode('/', $fullPath);
+        $className = array_pop($pathParts);
+        $domainPath = implode('/', $pathParts);
 
-        if (!$this->hasFile['controller']) {
-            $controllerContent = (new CreateController($modelBinding, $controllerPath))->generate();
-            file_put_contents($controllerFileName, $controllerContent);
-            $this->info("\nController created: <fg=yellow>{$controllerFileName}</>");
-        } else {
-            $this->info("\nController already exists: <fg=red>{$controllerFileName}</>");
+        $controllerName = $this->formatControllerName($className);
+        $modelBinding = $this->getModelBinding($controllerName);
+
+        $this->info("\n Generating CRUD for: {$className}");
+        $this->info("📁 Domain Path: {$domainPath}");
+
+        // Create all components
+        $this->generateController($modelBinding, $domainPath);
+        $this->generateModel($modelBinding, $domainPath);
+        $this->generateService($modelBinding, $domainPath);
+        $this->generateRepository($modelBinding, $domainPath);
+        $this->generateFormRequests($modelBinding, $domainPath);
+        $this->generateResource($modelBinding, $domainPath);
+        $this->generateMigration($modelBinding);
+        $this->generateFeatureTest($modelBinding, $domainPath);
+        $this->generateFactory($modelBinding, $domainPath);
+        $this->generateSeederClass($modelBinding, $domainPath);
+        $this->updateRoutesFile($modelBinding, $domainPath, $controllerName);
+
+        $this->displaySummary();
+    }
+
+    private function generateController(array $modelBinding, string $domainPath): void
+    {
+        $fileName = app_path("Http/Controllers/{$domainPath}/{$modelBinding['className']}Controller.php");
+        $this->createDirectoryIfNotExists($fileName);
+
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['controller'] = true;
+            $this->warn("Controller already exists: {$fileName}");
+            return;
         }
 
-        $this->generateAndSaveService($modelBinding, $controllerPath);
+        $content = (new CreateController($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Controller created: {$fileName}");
+    }
 
-        $this->generateAndSaveRepository($modelBinding, $controllerPath);
+    private function generateModel(array $modelBinding, string $domainPath): void
+    {
+        // Normalize and sanitize the namespace
+        $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
 
-        // Create and save model
-        $this->generateAndSaveModel($modelBinding);
+        // Safely build the model path
+        $modelDir = $dir ? "Models/{$dir}" : "Models";
+        $fileName = app_path("{$modelDir}/{$modelBinding['className']}.php");
+        $this->createDirectoryIfNotExists($fileName);
 
-        // Create and save form request classes
-        $this->generateAndSaveFormRequests($modelBinding);
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['model'] = true;
+            $this->warn("Model already exists: {$fileName}");
+            return;
+        }
 
-        // Create and save resource and resource collection
-        $this->generateAndSaveResource($modelBinding);
+        $content = (new CreateModel($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Model created: {$fileName}");
+    }
 
-        // Update routes file
-        $this->updateRoutesFile($modelBinding, $controllerPath, $controllerNameWithoutSuffix);
+    private function generateService(array $modelBinding, string $domainPath): void
+    {
+        $fileName = app_path("Services/{$domainPath}/{$modelBinding['className']}Service.php");
+        $this->createDirectoryIfNotExists($fileName);
 
-        // Create and save migration
-        $this->generateAndSaveMigration($modelBinding);
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['service'] = true;
+            $this->warn("Service already exists: {$fileName}");
+            return;
+        }
 
-        // Create and save factory
-        $this->generateAndSaveFactory($modelBinding);
+        $content = (new CreateService($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Service created: {$fileName}");
+    }
 
-        // create seeder class
-        $this->generateSeederClass($modelBinding);
+    private function generateRepository(array $modelBinding, string $domainPath): void
+    {
+        $fileName = app_path("Repositories/{$domainPath}/{$modelBinding['className']}Repository.php");
+        $this->createDirectoryIfNotExists($fileName);
 
-        $allFilesExist = array_reduce($this->hasFile, fn($carry, $value) => $carry && $value, true);
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['repository'] = true;
+            $this->warn("Repository already exists: {$fileName}");
+            return;
+        }
 
-        if ($allFilesExist) {
-            $this->info("\nAll those files already exist.");
-        } else if (in_array(true, $this->hasFile, true)) {
-            $this->info("\n<fg=bright-yellow>Some of those files already exist.</>");
-            $this->info("and some of those files created successfully.");
-            $exportApiSchema = $this->option('export-api-schema');
-            if ($exportApiSchema) {
-                $this->call('optimize:clear');
-                $this->call('export:postman');
-            }
+        $content = (new CreateRepository($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Repository created: {$fileName}");
+    }
+
+    private function generateFormRequests(array $modelBinding, string $domainPath): void
+    {
+        $directory = app_path("Http/Requests/{$domainPath}/{$modelBinding['className']}");
+        $storeFile = "{$directory}/{$modelBinding['className']}StoreRequest.php";
+        $updateFile = "{$directory}/{$modelBinding['className']}UpdateRequest.php";
+
+        $this->createDirectoryIfNotExists($storeFile);
+
+        if (!$this->isFileExists($storeFile)) {
+            $content = (new CreateFormRequest($modelBinding, $domainPath))->generateStore();
+            file_put_contents($storeFile, $content);
+            $this->info("✓ Store Request created: {$storeFile}");
         } else {
-            $this->info("\nCRUD created successfully!");
-            $exportApiSchema = $this->option('export-api-schema');
-            if ($exportApiSchema) {
-                $this->call('optimize:clear');
-                $this->call('export:postman');
-            }
+            $this->hasFile['formRequest'] = true;
+            $this->warn("Store Request already exists: {$storeFile}");
+        }
+
+        if (!$this->isFileExists($updateFile)) {
+            $content = (new CreateFormRequest($modelBinding, $domainPath))->generateUpdate();
+            file_put_contents($updateFile, $content);
+            $this->info("✓ Update Request created: {$updateFile}");
+        } else {
+            $this->warn("Update Request already exists: {$updateFile}");
         }
     }
 
-    private function createDirectoryIfNotExists(string $controllerFileName): void
+    private function generateResource(array $modelBinding, string $domainPath): void
     {
-        if (!is_dir(dirname($controllerFileName))) {
-            mkdir(dirname($controllerFileName), 0755, true);
+        $directory = app_path("Http/Resources/{$domainPath}/{$modelBinding['className']}");
+        $fileName = "{$directory}/{$modelBinding['className']}Resource.php";
+
+        $this->createDirectoryIfNotExists($fileName);
+
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['resource'] = true;
+            $this->warn("Resource already exists: {$fileName}");
+            return;
         }
+
+        $content = (new CreateResource($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Resource created: {$fileName}");
     }
 
-    private function isFileExists(string $controllerFileName): bool
+    private function generateMigration(array $modelBinding): void
     {
-        if (file_exists($controllerFileName)) return true;
-        return false;
-    }
+        $tableName = Str::snake(Str::pluralStudly($modelBinding['className']));
+        $migrationFileName = database_path("migrations/" . date('Y_m_d_His') . "_create_{$tableName}_table.php");
+        $substringToMatch = "_create_{$tableName}_table.php";
 
-
-    private function generateAndSaveService(array $modelBinding, string $controllerPath): void
-    {
-        $serviceDirectory = app_path("Services/V1/{$controllerPath}");
-        $serviceFileName = "{$serviceDirectory}/{$modelBinding['className']}Service.php";
-
-        $this->createDirectoryIfNotExists($serviceFileName);
-
-        if (!file_exists($serviceFileName)) {
-            $serviceContent = (new CreateService($modelBinding, $controllerPath))->generate();
-            file_put_contents($serviceFileName, $serviceContent);
-            $this->info("\nService created: <fg=yellow>{$serviceFileName}</>");
-        } else {
-            $this->info("\nService already exists: <fg=red>{$serviceFileName}</>");
-        }
-    }
-
-    private function generateAndSaveRepository(array $modelBinding, string $controllerPath): void
-    {
-        $repositoryDirectory = app_path("Repositories/V1/{$controllerPath}");
-        $repositoryFileName = "{$repositoryDirectory}/{$modelBinding['className']}BaseRepository.php";
-
-        $this->createDirectoryIfNotExists($repositoryFileName);
-
-        if (!file_exists($repositoryFileName)) {
-            $repositoryContent = (new CreateRepository($modelBinding, $controllerPath))->generate();
-            file_put_contents($repositoryFileName, $repositoryContent);
-            $this->info("\nBaseRepository created: <fg=yellow>{$repositoryFileName}</>");
-        } else {
-            $this->info("\nBaseRepository already exists: <fg=red>{$repositoryFileName}</>");
-        }
-    }
-
-    private function generateAndSaveModel(array $modelBinding): void
-    {
-        $modelFileName = app_path("Models/{$modelBinding['className']}.php");
-        $this->hasFile['model'] = $this->isFileExists($modelFileName);
-        if (!$this->hasFile['model']) {
-            $modelContent = (new CreateModel($modelBinding))->generate();
-            file_put_contents($modelFileName, $modelContent);
-            $this->info("\nModel created: <fg=yellow>{$modelFileName}</>");
-        } else {
-            $this->info("\nModel already exists: <fg=red>{$modelFileName}</>");
-        }
-    }
-
-    private function generateAndSaveFormRequests(array $modelBinding): void
-    {
-        $formRequestDirectory = app_path("Http/Requests/{$modelBinding['className']}");
-        $formRequestStoreFileName = "{$formRequestDirectory}/{$modelBinding['className']}StoreRequest.php";
-        $formRequestUpdateFileName = "{$formRequestDirectory}/{$modelBinding['className']}UpdateRequest.php";
-
-        $this->createDirectoryIfNotExists($formRequestStoreFileName);
-        $this->hasFile['formRequest'] = $this->isFileExists($formRequestStoreFileName);
-        if (!$this->hasFile['formRequest']) {
-            $formRequestStoreContent = (new CreateFormRequest($modelBinding))->generateStore();
-            file_put_contents($formRequestStoreFileName, $formRequestStoreContent);
-            $this->info("\nStore Form requests created: <fg=yellow>{$formRequestStoreFileName}</>");
-        } else {
-            $this->info("\nStore Form requests already exists: <fg=red>{$formRequestStoreFileName}</>");
-        }
-        $this->hasFile['formRequest'] = $this->isFileExists($formRequestUpdateFileName);
-        if (!$this->hasFile['formRequest']) {
-            $formRequestUpdateContent = (new CreateFormRequest($modelBinding))->generateUpdate();
-            file_put_contents($formRequestUpdateFileName, $formRequestUpdateContent);
-            $this->info("\nUpdate Form requests created: <fg=yellow>{$formRequestUpdateFileName}</>");
-        } else {
-            $this->info("\nUpdate Form requests already exists: <fg=red>{$formRequestUpdateFileName}</>");
-        }
-    }
-
-    private function generateAndSaveResource(array $modelBinding): void
-    {
-        $resourceDirectory = app_path("Http/Resources/{$modelBinding['className']}");
-        $resourceFileName = "{$resourceDirectory}/{$modelBinding['className']}Resource.php";
-
-        $this->createDirectoryIfNotExists($resourceFileName);
-        $this->hasFile['resource'] = $this->isFileExists($resourceFileName);
-        if (!$this->hasFile['resource']) {
-            $resourceContent = (new CreateResource($modelBinding))->generateResource();
-            file_put_contents($resourceFileName, $resourceContent);
-            $this->info("\nResource created: <fg=yellow>{$resourceFileName}</>");
-        } else {
-            $this->info("\nResource already exists: <fg=red>{$resourceFileName}</>");
-        }
-    }
-
-    private function updateRoutesFile(array $modelBinding, string $controllerPath, string $controllerNameWithoutSuffix): void
-    {
-        $routeFileName = base_path('routes/api.php');
-        // create a new route file
-
-        $routeName = Str::kebab($modelBinding['className']);
-        $this->addApiResourceRoute($routeFileName, $routeName, $controllerPath, "{$controllerNameWithoutSuffix}");
-        $result = $this->addUseStatementToRoutesFile($modelBinding['className'], $routeFileName, "use App\Http\Controllers\V1\\{$controllerPath}\\{$controllerNameWithoutSuffix};");
-        if ($result) {
-            $this->info("\nRoute added: <fg=yellow>{$routeFileName}</>");
-        } else {
-            $this->info("\nRoute already exists: <fg=red>{$routeFileName}</>");
-        }
-    }
-
-    private function generateAndSaveMigration(array $modelBinding): void
-    {
-        $modelBinding['className'] = strtolower($modelBinding['className']) . 's';
-        $migrationFileName = database_path("migrations/" . date('Y_m_d_His') . "_create_{$modelBinding['className']}_table.php");
-        $substringToMatch = "_create_{$modelBinding['className']}_table.php";
         $files = scandir(database_path("migrations"));
         foreach ($files as $file) {
             if (str_contains($file, $substringToMatch)) {
-                $filePath = database_path("migrations/{$file}");
-
-                if (file_exists($filePath)) {
-                    $this->hasFile['migration'] = true;
-                }
+                $this->hasFile['migration'] = true;
+                $this->warn("Migration already exists: {$file}");
+                return;
             }
         }
-        if (!$this->hasFile['migration']) {
-            $migrationContent = (new CreateMigration($modelBinding))->generate();
-            file_put_contents($migrationFileName, $migrationContent);
-            $this->info("\nMigration created: <fg=yellow>{$migrationFileName}</>");
-        } else {
-            $this->info("\nMigration already exists: <fg=red>{$migrationFileName}</>");
-        }
+
+        $content = (new CreateMigration($modelBinding))->generate();
+        file_put_contents($migrationFileName, $content);
+        $this->info("✓ Migration created: {$migrationFileName}");
     }
 
-    private function generateAndSaveFactory(array $modelBinding): void
+    private function generateFactory(array $modelBinding, string $domainPath): void
     {
-        $factoryFileName = database_path("factories/{$modelBinding['className']}Factory.php");
-        $this->hasFile['factory'] = $this->isFileExists($factoryFileName);
-        if (!$this->hasFile['factory']) {
-            $factoryContent = (new CreateFactory($modelBinding))->generate();
-            file_put_contents($factoryFileName, $factoryContent);
-            $this->info("\nFactory created: <fg=yellow>{$factoryFileName}</>");
-        } else {
-            $this->info("\nFactory already exists: <fg=red>{$factoryFileName}</>");
+        $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
+        $factoryDir = $dir ? "factories/{$dir}" : "factories";
+        $fileName = database_path("{$factoryDir}/{$modelBinding['className']}Factory.php");
+        $this->createDirectoryIfNotExists($fileName);
+
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['factory'] = true;
+            $this->warn("Factory already exists: {$fileName}");
+            return;
         }
+
+        $content = (new CreateFactory($modelBinding, $dir))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Factory created: {$fileName}");
     }
 
-    private function generateSeederClass(array $modelBinding): void
+    private function generateFeatureTest(array $modelBinding, string $domainPath): void
     {
-        $databaseSeederFileName = database_path("seeders/DatabaseSeeder.php");
+        $fileName = base_path("tests/Feature/{$domainPath}/{$modelBinding['className']}Test.php");
+        $this->createDirectoryIfNotExists($fileName);
 
-        $databaseSeederContent = file_get_contents($databaseSeederFileName);
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['test'] = true;
+            $this->warn("Test already exists: {$fileName}");
+            return;
+        }
 
-        if (!str_contains($databaseSeederContent, "use App\Models\\{$modelBinding['className']}")) {
-            $databaseSeederContent = preg_replace(
+        $content = (new CreateFeatureTest($modelBinding, $domainPath))->generate();
+        file_put_contents($fileName, $content);
+        $this->info("✓ Feature Test created: {$fileName}");
+    }
+
+//    private function generateSeederClass(array $modelBinding): void
+//    {
+//        $seederFile = database_path("seeders/DatabaseSeeder.php");
+//        $seederContent = file_get_contents($seederFile);
+//        $className = $modelBinding['className'];
+//
+//        if (!str_contains($seederContent, "use App\Models\\{$className}")) {
+//            $seederContent = preg_replace(
+//                '/namespace Database\\\\Seeders;/',
+//                "namespace Database\\Seeders;\n\nuse App\Models\\{$className};",
+//                $seederContent,
+//                1
+//            );
+//        }
+//
+//        if (!str_contains($seederContent, "{$className}::factory()->count(10)->create();")) {
+//            $seederContent = preg_replace(
+//                '/public\s+function\s+run\s*\(\s*\): void\s*{/',
+//                "public function run(): void\n    {\n        {$className}::factory()->count(10)->create();",
+//                $seederContent,
+//                1
+//            );
+//            file_put_contents($seederFile, $seederContent);
+//            $this->info("✓ Seeder added to DatabaseSeeder");
+//        } else {
+//            $this->warn("Seeder already exists in DatabaseSeeder");
+//        }
+//    }
+
+    private function generateSeederClass(array $modelBinding, $domainPath): void
+    {
+        // Normalize and sanitize the namespace
+        $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
+
+        // Safely build the seeder path
+        $seederDir = $dir ? "seeders/{$dir}" : "seeders";
+        $fileName = database_path("{$seederDir}/{$modelBinding['className']}Seeder.php");
+        $this->createDirectoryIfNotExists($fileName);
+
+        // 1️⃣ Create Seeder File if Not Exists
+        if ($this->isFileExists($fileName)) {
+            $this->hasFile['seeder'] = true;
+            $this->warn("Seeder already exists: {$fileName}");
+        } else {
+            $content = (new CreateSeeder($modelBinding, $domainPath))->generate();
+            file_put_contents($fileName, $content);
+            $this->info("✓ Seeder created: {$fileName}");
+        }
+
+        // 2️⃣ Now Register it Inside DatabaseSeeder.php
+        $databaseSeederFile = database_path("seeders/DatabaseSeeder.php");
+
+        if (!file_exists($databaseSeederFile)) {
+            // If missing, create the base DatabaseSeeder file
+            $baseSeederContent = <<<PHP
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Database\Seeders\\{$modelBinding['className']}Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        \$this->call([
+            {$modelBinding['className']}Seeder::class,
+        ]);
+    }
+}
+PHP;
+            file_put_contents($databaseSeederFile, $baseSeederContent);
+            $this->info("✓ Created new DatabaseSeeder and registered {$modelBinding['className']}Seeder");
+            return;
+        }
+
+        // Read current content
+        $content = file_get_contents($databaseSeederFile);
+        $seederClass = "{$modelBinding['className']}Seeder";
+        $seederClassWithDomain = ($dir ? $dir . '\\' : '') . $seederClass;
+
+        // Add `use` statement if not exists
+        if (!str_contains($content, "use Database\\Seeders\\{$seederClassWithDomain};")) {
+            $content = preg_replace(
                 '/namespace Database\\\\Seeders;/',
-                "namespace Database\\Seeders;\n\nuse App\Models\\{$modelBinding['className']}; ",
-                $databaseSeederContent,
+                "namespace Database\\Seeders;\n\nuse Database\\Seeders\\{$seederClassWithDomain};",
+                $content,
                 1
             );
-            file_put_contents($databaseSeederFileName, $databaseSeederContent);
-        } else {
-            $this->info("\nSeeder already exists in the DatabaseSeeder class: <fg=red>{$databaseSeederFileName}</>");
         }
 
-        if (!str_contains($databaseSeederContent, "{$modelBinding['className']}::factory()->count(10)->create();")) {
-            $databaseSeederContent = preg_replace(
-                '/public\s+function\s+run\s*\(\s*\): void\s*{/',
-                "public function run(): void\n    {\n        {$modelBinding['className']}::factory()->count(10)->create();",
-                $databaseSeederContent,
-                1
-            );
-            file_put_contents($databaseSeederFileName, $databaseSeederContent);
-            $this->info("\nSeeder added to the DatabaseSeeder class: <fg=yellow>{$databaseSeederFileName}</>");
-        } else {
-            $this->info("\nSeeder already exists in the DatabaseSeeder class: <fg=red>{$databaseSeederFileName}</>");
-        }
-    }
+        // If run() already contains a $this->call([...])
+        if (preg_match('/\$this->call\s*\(\s*\[(.*?)]\s*\)\s*;/s', $content, $matches)) {
+            $existing = trim($matches[1]);
 
-    // helper functions start here
+            if (!str_contains($existing, $seederClass)) {
+                // Rebuild $this->call([...]) with proper formatting
+                $allSeeders = array_filter(array_map(function($line) {
+                    return rtrim(trim($line), ','); // remove spaces + trailing comma
+                }, explode("\n", $existing)));
+                $allSeeders[] = "{$seederClass}::class";
 
-    private
-    function formatControllerName(string $name): string
-    {
-        $segments = explode('/', $name);
-        $controllerName = end($segments);
+                // Proper indentation and newlines
+                $formattedSeeders = "            " . implode(",\n            ", $allSeeders) . ",";
+                $newCallBlock = "\n" . $formattedSeeders . "\n        "; // opening and closing brackets indentation
 
-        return str_contains($controllerName, 'Controller') ? $controllerName : $controllerName . 'Controller';
-    }
-
-    private
-    function getControllerPath(string $name): string
-    {
-        $segments = explode('/', $name);
-        array_pop($segments);
-        if (count($segments) == 0) return '';
-        return '/' . implode('/', $segments);
-    }
-
-    private
-    function getModelBinding(string $controllerName): array
-    {
-        $array['className'] = str_replace('Controller', '', $controllerName);
-        $array['classVar'] = '$' . Str::lower(str_replace('Controller', '', $controllerName));
-        return $array;
-    }
-
-    private
-    function addApiResourceRoute(string $routeFileName, string $routeName, string $controllerPath, string $controllerClass): void
-    {
-        $routeContent = file_get_contents($routeFileName);
-        if (
-            str_contains($routeContent, "Route::prefix('{$routeName}')->group(function () {")
-        ) return;
-
-        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {
-            Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');
-            Route::get('show/{slug}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');
-            Route::post('store', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');
-            Route::put('update/{{$routeName}}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');
-            Route::delete('destroy/{{$routeName}}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');
-        });\n";
-        file_put_contents($routeFileName, $routeContent);
-    }
-
-    private function addUseStatementToRoutesFile(string $className, string $routeFileName, string $useStatement): bool
-    {
-        $routeContent = file_get_contents($routeFileName);
-        $routeUseStatement = str_replace('\\\\', '\\', $useStatement);
-
-        $pattern = '/use\s+App\\\\Http\\\\Controllers\\\\V1\\\\(([a-zA_Z\\\\]+)?([a-zA-Z]+)+Controller);/';
-
-        preg_match($pattern, $routeContent, $matches);
-
-        // Check if the use statement already exists
-        if (!empty($matches)) {
-            if (str_contains($matches[0], $routeUseStatement) || str_contains($matches[3], $className)) {
-                return false;
+                // Replace old block
+                $content = str_replace($matches[1], $newCallBlock, $content);
+                file_put_contents($databaseSeederFile, $content);
+                $this->info("✓ Registered {$seederClass} in DatabaseSeeder");
             } else {
-                // Insert the use statement at the top of the file
-                $routeContent = preg_replace(
-                    '/<\?php/',
-                    "<?php\n{$routeUseStatement}",
-                    $routeContent,
-                    1
-                );
-                return file_put_contents($routeFileName, $routeContent);
+                $this->warn("Seeder {$seederClass} already registered in DatabaseSeeder");
             }
         } else {
-            // Insert the use statement at the top of the file
-            $routeContent = preg_replace(
-                '/<\?php/',
-                "<?php\n{$routeUseStatement}",
-                $routeContent,
+            // No $this->call block — create one
+            $runMethod = <<<PHP
+
+    public function run(): void
+    {
+        \$this->call([
+            {$seederClass}::class,
+        ]);
+    }
+PHP;
+            $content = preg_replace(
+                '/class\s+DatabaseSeeder\s+extends\s+Seeder\s*\{/',
+                "class DatabaseSeeder extends Seeder\n{{$runMethod}",
+                $content,
                 1
             );
-            return file_put_contents($routeFileName, $routeContent);
+            file_put_contents($databaseSeederFile, $content);
+            $this->info("✓ Added run() method and registered {$seederClass}");
         }
-        return false;
+    }
+    private function updateRoutesFile(array $modelBinding, string $domainPath, string $controllerName): void
+    {
+        $routeFile = base_path('routes/api.php');
+        $routeName = Str::kebab($modelBinding['className']);
+        $namespace = str_replace('/', '\\', $domainPath);
+
+        $this->addApiResourceRoute($routeFile, $routeName, $controllerName);
+        $this->addUseStatement($routeFile, "use App\Http\Controllers\\{$namespace}\\{$controllerName};");
+    }
+
+    private function addApiResourceRoute(string $routeFile, string $routeName, string $controllerClass): void
+    {
+        $routeContent = file_get_contents($routeFile);
+        $prefix = Str::of($domainPath ?? '')->lower()->replace('\\', '/');
+        $prefix = $prefix->isNotEmpty() ? "{$prefix}/" : '';
+
+        if (str_contains($routeContent, "Route::apiResource('{$prefix}{$routeName}', {$controllerClass}::class);")) {
+            $this->warn("Route already exists for: {$routeName}");
+            return;
+        }
+
+//        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {
+//    Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');
+//    Route::get('show/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');
+//    Route::post('store', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');
+//    Route::put('update/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');
+//    Route::delete('destroy/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');
+//});\n";
+
+        $routeContent .= "\nRoute::apiResource('{$prefix}{$routeName}', {$controllerClass}::class);\n";
+
+        file_put_contents($routeFile, $routeContent);
+        $this->info("✓ Routes added for: {$routeName}");
+    }
+
+    private function addUseStatement(string $routeFile, string $useStatement): void
+    {
+        $routeContent = file_get_contents($routeFile);
+
+        if (str_contains($routeContent, $useStatement)) {
+            return;
+        }
+
+        $routeContent = preg_replace(
+            '/<\?php/',
+            "<?php\n{$useStatement}",
+            $routeContent,
+            1
+        );
+
+        file_put_contents($routeFile, $routeContent);
+    }
+
+    private function displaySummary(): void
+    {
+        $allFilesExist = !in_array(false, $this->hasFile, true);
+
+        if ($allFilesExist) {
+            $this->warn("\n⚠️  All files already exist.");
+        } elseif (in_array(true, $this->hasFile, true)) {
+            $this->info("\n✨ Some files created successfully.");
+            $this->warn("⚠️  Some files already existed.");
+        } else {
+            $this->info("\n✨ CRUD created successfully!");
+        }
+
+        if ($this->option('export-api-schema')) {
+            $this->call('optimize:clear');
+            $this->call('export:postman');
+        }
+    }
+
+    // Helper methods
+    private function createDirectoryIfNotExists(string $fileName): void
+    {
+        $directory = dirname($fileName);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+    }
+
+    private function isFileExists(string $fileName): bool
+    {
+        return file_exists($fileName);
+    }
+
+    private function formatControllerName(string $name): string
+    {
+        return str_contains($name, 'Controller') ? $name : $name . 'Controller';
+    }
+
+    private function getModelBinding(string $controllerName): array
+    {
+        $className = str_replace('Controller', '', $controllerName);
+        return [
+            'className' => $className,
+            'classVar' => ' '. Str::lower($className),
+        ];
     }
 }

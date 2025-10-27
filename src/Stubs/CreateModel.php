@@ -2,36 +2,41 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateModel
+use Illuminate\Support\Str;
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateModel extends BaseStub
 {
+    private array $modelBinding;
+    private string $namespace;
 
-    private string $modelBinding;
-    private string $modelBindingLower;
-
-    public function __construct(array $modelBinding)
+    public function __construct(array $modelBinding, string $domainPath)
     {
-        $this->modelBinding = $modelBinding['className'];
-        $this->modelBindingLower = strtolower($modelBinding['className']) . 's';
+        $this->modelBinding = $modelBinding;
+        $this->namespace = str_replace('/', '\\', $domainPath);
     }
 
     public function generate(): string
     {
+        $className = $this->modelBinding['className'];
+        $tableName = strtolower($className); // 'user'
+        $primaryKey = Str::camel($className) . 'Id';
+
         return "<?php
 
-namespace App\Models;
+namespace App\Models\\{$this->namespace};
 
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Cviebrock\EloquentSluggable\Sluggable;
 
-class {$this->modelBinding} extends Model
+class {$className} extends Model
 {
 use SoftDeletes, HasFactory;
-//use Sluggable;
+    //use Sluggable;
 
-    protected \$table = '{$this->modelBindingLower}'; // Table name if different from model name
+    protected \$table = '{$tableName}'; // Table name if different from model name
 
-    protected \$primaryKey = 'id'; // Primary key field
+    protected \$primaryKey = '{$primaryKey}'; // Primary key field
 
     protected \$fillable = [
         'title',
@@ -43,15 +48,15 @@ use SoftDeletes, HasFactory;
         // Add other attribute casting here
     ];
 
-//    public function sluggable(): array
-//    {
-//        return [
-//            'slug' => [
-//                'source' => ['title', 'id'], // Generate slug from 'title' and 'id' attributes
-//                'onUpdate' => true,          // Regenerate slug when the title is updated
-//            ],
-//        ];
-//    }
+    //    public function sluggable(): array
+    //    {
+    //        return [
+    //            'slug' => [
+    //                'source' => ['title', 'id'], // Generate slug from 'title' and 'id' attributes
+    //                'onUpdate' => true,          // Regenerate slug when the title is updated
+    //            ],
+    //        ];
+    //    }
 }
         ";
     }
