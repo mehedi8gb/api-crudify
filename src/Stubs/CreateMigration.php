@@ -6,7 +6,8 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 
 class CreateMigration extends BaseStub
 {
-    private mixed $modelBinding;
+    private string $modelBinding;
+    private string $pluralTableName;
 
     /**
      * @param array $modelBinding
@@ -14,6 +15,7 @@ class CreateMigration extends BaseStub
     public function __construct(array $modelBinding)
     {
         $this->modelBinding = strtolower($modelBinding['className']);
+        $this->pluralTableName = $this->pluralize($this->modelBinding);
     }
 
     public function generate(): string
@@ -30,7 +32,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('{$this->modelBinding}', function (Blueprint \$table) {
+        Schema::create('{$this->pluralTableName}', function (Blueprint \$table) {
             \$table->id('{$this->modelBinding}Id');
             \$table->string('title');
             \$table->string('slug')->unique();

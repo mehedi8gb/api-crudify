@@ -18,12 +18,13 @@ class CreateFactory extends BaseStub
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
+        $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 
         return "<?php
 
 namespace Database\Factories\\{$this->namespace};
 
-use App\Models\\{$this->namespace}\\{$className};
+use App\Models\\{$modelNameSpace}\\{$className};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -41,7 +42,7 @@ class {$className}Factory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true),
+            'title' => fake()->words(3, true),
             'slug' => fake()->unique()->slug(),
             'status' => fake()->boolean(80),
         ];

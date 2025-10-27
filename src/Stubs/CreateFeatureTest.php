@@ -20,12 +20,13 @@ class CreateFeatureTest extends BaseStub
         $className = $this->modelBinding['className'];
         $classVar = lcfirst($className);
         $classNamePlural = $this->pluralize(strtolower($className));
+        $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 
         return "<?php
 
 namespace Tests\Feature\\{$this->namespace};
 
-use App\Models\\{$this->namespace}\\{$className};
+use App\Models\\{$modelNameSpace}\\{$className};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

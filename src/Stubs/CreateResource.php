@@ -18,6 +18,8 @@ class CreateResource extends BaseStub
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
+        $classVar = lcfirst($className);
+        $resourceId = $this->toCamelCase($classVar) . 'Id';
 
         return "<?php
 
@@ -30,10 +32,10 @@ class {$className}Resource extends JsonResource
 {
     public function toArray(Request \$request): array
     {
-        \$id = \$this->id;
         return [
+            '{$resourceId}' => \$this->resource->{$resourceId},
             'title' => \$this->resource->title,
-            'createdAt' => getFormatedDate(\$this->resource->created_at)
+            'createdAt' => getFormatedDate(\$this->resource->createdAt)
         ];
     }
 }

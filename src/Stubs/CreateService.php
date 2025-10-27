@@ -2,106 +2,179 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateService
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateService extends BaseStub
 {
     private array $modelBinding;
-    private mixed $controllerPath;
+    private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)
     {
         $this->modelBinding = $modelBinding;
-        if ($controllerPath === '') {
-            $this->controllerPath = '';
-        } else {
-            $this->controllerPath = '\\' . str_replace('/', '\\', $controllerPath);
-        }
+        $this->namespace = str_replace('/', '\\', $controllerPath);
     }
 
     public function generate(): string
     {
-        $className = $this->modelBinding['className'];
-        $classNameLower = strtolower($className);
-        $classNamePlural = $this->pluralize($classNameLower);
-        $classNamePluralTitle = ucfirst($classNamePlural);
-        $repositoryClass = "{$className}BaseRepository";
-        $serviceVar = lcfirst($className);
+        $className        = $this->modelBinding['className'];            // Original model class name, e.g., "Order"
+        $classVar         = lcfirst($className);                         // e.g., "order"
+        $classNamePlural  = $this->pluralize($className);                // e.g., "Orders"
+        $classNameCamel   = $this->toCamelCase($classNamePlural);        // e.g., "orders" => "orders" (camelCase)
+        $classNameTitle   = ucfirst($classNamePlural);                   // e.g., "Orders"
+        $methodNameSuffix = ucfirst($classNameCamel);                    // e.g., "Orders" (used in getXXXData)
+        $repositoryClass = "{$className}Repository";
+        $repositoryObject = '$'."{$classVar}Repository";
+        $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 
         return "<?php
 
-namespace App\Services\V1$this->controllerPath;
+namespace App\Services\\{$this->namespace};
 
-use App\Http\Resources\\{$className}\\{$className}Resource;
-use App\Repositories\V1$this->controllerPath\\{$repositoryClass};
-use Exception;
+use App\Http\Resources\\{$this->namespace}\\{$className}\\{$className}Resource;
+use App\Models\\{$modelNameSpace}\\{$className};
+use App\Repositories\\{$this->namespace}\\{$repositoryClass};
+use App\Services\V1\BaseService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Throwable;
+use Exception;
 
-class {$className}Service
+/**
+ * {$className} business logic service.
+ *
+ * Responsibilities:
+ * - Orchestrate {$classVar} operations
+ * - Enforce business rules
+ * - Coordinate with repository
+ *
+ * Does NOT handle:
+ * - HTTP requests (controller's job)
+ * - Resource transformation (controller's job)
+ * - Direct DB queries (repository's job)
+ */
+final class {$className}Service extends BaseService
 {
-    public function __construct(private readonly {$repositoryClass} \$repository) {}
-
-    /**
-     * @throws Exception
-     */
-    public function list{$classNamePluralTitle}(): array|Collection
-    {
-        \$query = \$this->repository->query();
-        return handleApiRequest(request(), \$query, [], {$className}Resource::class);
+    public function __construct(
+        protected $repositoryClass $repositoryObject,
+        protected Request \$request
+    ) {
+        parent::__construct($repositoryObject, \$request);
     }
 
     /**
+     * Get {$classNameTitle} data.
+     *
+     * Returns data formatted for API response.
+     * @throws Exception
+     */
+    public function get{$methodNameSuffix}Collection(): array
+    {
+         \$data = \$this->{$classVar}Repository->get{$methodNameSuffix}Data();
+
+        return \$this->prepareResourceResponse(\$data, {$className}Resource::class);
+    }
+
+    /**
+     * Create a new {$classVar} with business validation.
+     *
      * @throws Throwable
      */
-    public function create{$className}(array \$data)
+    public function create{$className}(array \$data): {$className}
     {
-        return \$this->repository->create(\$data);
-    }
-
-    public function get{$className}(string \$id)
-    {
-        return \$this->repository->findById(\$id);
+        return \$this->create(\$data);
     }
 
     /**
-     * @throws Exception
+     * Update a {$classVar} with business validation.
+     *
+     * @throws Throwable
      */
-    public function update{$className}(string \$id, array \$data)
+    public function update{$className}({$className} \${$classVar}, array \$data): Model
     {
-        \${$serviceVar} = \$this->repository->findById(\$id);
-
-        if (! \${$serviceVar}) {
-            throw new Exception('{$className} not found');
-        }
-
-        return \$this->repository->update(\${$serviceVar}, \$data);
+        return \$this->update(\${$classVar}, \$data);
     }
 
     /**
-     * @throws Exception
+     * Delete a {$classVar} with business validation.
+     *
+     * @throws Throwable
      */
-    public function delete{$className}(string \$id): bool
+    public function delete{$className}({$className} \${$classVar}): bool
     {
-        \${$serviceVar} = \$this->repository->findById(\$id);
+        return \$this->delete(\${$classVar});
+    }
 
-        if (! \${$serviceVar}) {
-            throw new Exception('{$className} not found');
-        }
+    // ==========================================
+    // Business Logic Hooks
+    // ==========================================
 
-        return \$this->repository->delete(\${$serviceVar});
+    /**
+     * Validate data before creation.
+     */
+    protected function beforeCreate(array \$data): array
+    {
+        // Business rule: Generate slug if not provided
+        // if (empty(\$data['slug']) && !empty(\$data['name'])) {
+        //     \$data['slug'] = \Str::slug(\$data['name']);
+        // }
+
+        return \$data;
+    }
+
+    /**
+     * Post-creation operations.
+     */
+    protected function afterCreate(Model \$model): void
+    {
+        // Example: Fire event, invalidate cache, log activity
+        // event(new {$className}Created(\$model));
+    }
+
+    /**
+     * Validate data before update.
+     */
+    protected function beforeUpdate(Model \$model, array \$data): array
+    {
+        // Business rule: Regenerate slug if name changed
+        // if (isset(\$data['name']) && \$data['name'] !== \$model->name) {
+        //     \$data['slug'] = \Str::slug(\$data['name']);
+        // }
+
+        return \$data;
+    }
+
+    /**
+     * Post-update operations.
+     */
+    protected function afterUpdate(Model \$model): void
+    {
+        // event(new {$className}Updated(\$model));
+    }
+
+    /**
+     * Validate before deletion.
+     */
+    protected function beforeDelete(Model \$model): void
+    {
+        // Business rule: Add any deletion constraints here
+        // Example: Cannot delete if used by other entities
+    }
+
+    /**
+     * Post-delete operations.
+     */
+    protected function afterDelete(Model \$model): void
+    {
+        // event(new {$className}Deleted(\$model));
+    }
+
+    public function findAll(array \$with = []): Collection
+    {
+        return \$this->{$classVar}Repository->all();
     }
 }
         ";
-    }
-
-    private function pluralize(string $word): string
-    {
-        if (substr($word, -1) === 'y') {
-            return substr($word, 0, -1) . 'ies';
-        } elseif (in_array(substr($word, -1), ['s', 'x', 'z']) || in_array(substr($word, -2), ['ch', 'sh'])) {
-            return $word . 'es';
-        } else {
-            return $word . 's';
-        }
     }
 }

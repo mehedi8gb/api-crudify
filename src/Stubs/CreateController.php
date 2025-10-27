@@ -2,124 +2,140 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateController
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateController extends BaseStub
 {
     private array $modelBinding;
-    private mixed $controllerPath;
+    private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)
     {
         $this->modelBinding = $modelBinding;
-        if ($controllerPath === '') {
-            $this->controllerPath = '';
-        } else {
-            $this->controllerPath = '\\' . str_replace('/', '\\', $controllerPath);
-        }
+        $this->namespace = str_replace('/', '\\', $controllerPath);
     }
 
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
-        $classNameLower = strtolower($className);
-        $classNamePlural = $this->pluralize($classNameLower);
+        $classVar = lcfirst($className);
+        $classNamePlural = $this->pluralize(strtolower($className));
         $classNamePluralTitle = ucfirst($classNamePlural);
         $serviceClass = "{$className}Service";
-        $serviceVar = lcfirst($className);
+        $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 
         return "<?php
 
-namespace App\Http\Controllers\V1$this->controllerPath;
+namespace App\Http\Controllers\\{$this->namespace};
 
-use App\Http\Requests\\{$className}\\{$className}StoreRequest;
-use App\Http\Requests\\{$className}\\{$className}UpdateRequest;
-use App\Http\Resources\\{$className}\\{$className}Resource;
-use App\Services\V1$this->controllerPath\\{$serviceClass};
+use App\Http\Controllers\V1\BaseController;
+use App\Http\Requests\\{$this->namespace}\\{$className}\\{$className}StoreRequest;
+use App\Http\Requests\\{$this->namespace}\\{$className}\\{$className}UpdateRequest;
+use App\Http\Resources\\{$this->namespace}\\{$className}\\{$className}Resource;
+use App\Models\\{$modelNameSpace}\\{$className};
+use App\Services\\{$this->namespace}\\{$serviceClass};
 use Exception;
-use Illuminate\Routing\Controller;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-class {$className}Controller extends Controller
+/**
+ * {$className} HTTP controller.
+ *
+ * Responsibilities:
+ * - Handle HTTP requests/responses
+ * - Request validation (via FormRequests)
+ * - Resource transformation
+ * - Pagination/filtering
+ *
+ * Does NOT handle:
+ * - Business logic (service's job)
+ * - Database queries (repository's job)
+ */
+final class {$className}Controller extends BaseController
 {
-    public function __construct(private readonly {$serviceClass} \$service) {}
+    public function __construct(
+        private readonly {$serviceClass} \$service
+    ) {}
 
     /**
+     * List {$classNamePlural} with pagination/filtering.
+     *
+     * GET /api/v1/{$classNamePlural}
      * @throws Exception
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        \${$classNamePlural} = \$this->service->list{$classNamePluralTitle}();
-        return sendSuccessResponse(
-            '{$classNamePluralTitle} retrieved successfully',
-            \${$classNamePlural},
-            Response::HTTP_OK
-        );
+        // Get collection from service
+        \$collection = \$this->service->get{$classNamePluralTitle}Collection();
+
+        return \$this->successResponse('{$classNamePluralTitle} retrieved successfully', \$collection);
     }
 
     /**
+     * Create a new {$classVar}.
+     *
+     * POST /api/v1/{$classNamePlural}
      * @throws Throwable
      */
-    public function store({$className}StoreRequest \$request)
+    public function store({$className}StoreRequest \$request): JsonResponse
     {
-        \${$serviceVar} = \$this->service->create{$className}(\$request->validated());
+        \${$classVar} = \$this->service->create{$className}(\$request->validated());
 
-        return sendSuccessResponse(
+        return \$this->successResponse(
             '{$className} created successfully',
-            new {$className}Resource(\${$serviceVar}),
+            new {$className}Resource(\${$classVar}),
             Response::HTTP_CREATED
         );
     }
 
-    public function show(string \${$serviceVar}Id)
+    /**
+     * Show a specific {$classVar}.
+     *
+     * GET /api/v1/{$classNamePlural}/{{$classVar}}
+     */
+    public function show({$className} \${$classVar}): JsonResponse
     {
-        \${$serviceVar} = \$this->service->get{$className}(\${$serviceVar}Id);
-        if (! \${$serviceVar}) {
-            return sendErrorResponse('{$className} not found', Response::HTTP_NOT_FOUND);
-        }
-
-        return sendSuccessResponse(
+        return \$this->successResponse(
             '{$className} retrieved successfully',
-            new {$className}Resource(\${$serviceVar}),
-            Response::HTTP_OK
+            new {$className}Resource(\${$classVar})
         );
     }
 
-    public function update({$className}UpdateRequest \$request, string \${$serviceVar}Id)
+    /**
+     * Update a {$classVar}.
+     *
+     * PUT/PATCH /api/v1/{$classNamePlural}/{{$classVar}}
+     * @throws Throwable
+     */
+    public function update({$className}UpdateRequest \$request, {$className} \${$classVar}): JsonResponse
     {
-        try {
-            \${$serviceVar} = \$this->service->update{$className}(\${$serviceVar}Id, \$request->validated());
+        \$updated = \$this->service->update{$className}(\${$classVar}, \$request->validated());
 
-            return sendSuccessResponse(
-                '{$className} updated successfully',
-                new {$className}Resource(\${$serviceVar}),
-                Response::HTTP_OK
-            );
-        } catch (Exception \$e) {
-            return sendErrorResponse(\$e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
+        return \$this->successResponse(
+            '{$className} updated successfully',
+            new {$className}Resource(\$updated),
+            Response::HTTP_ACCEPTED
+        );
     }
 
-    public function destroy(string \${$serviceVar}Id)
+    /**
+     * Delete a {$classVar}.
+     *
+     * DELETE /api/v1/{$classNamePlural}/{{$classVar}}
+     * @throws Throwable
+     */
+    public function destroy({$className} \${$classVar}): JsonResponse
     {
-        try {
-            \$this->service->delete{$className}(\${$serviceVar}Id);
-            return sendSuccessResponse('{$className} deleted successfully', null, Response::HTTP_NO_CONTENT);
-        } catch (Exception \$e) {
-            return sendErrorResponse(\$e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
+        \$this->service->delete{$className}(\${$classVar});
+
+        return \$this->successResponse(
+            '{$className} deleted successfully',
+            null,
+            Response::HTTP_NO_CONTENT
+        );
     }
 }
         ";
-    }
-
-    private function pluralize(string $word): string
-    {
-        if (str_ends_with($word, 'y')) {
-            return substr($word, 0, -1) . 'ies';
-        } elseif (in_array(substr($word, -1), ['s', 'x', 'z']) || in_array(substr($word, -2), ['ch', 'sh'])) {
-            return $word . 'es';
-        } else {
-            return $word . 's';
-        }
     }
 }

@@ -2,58 +2,95 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs;
 
-class CreateRepository
+use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
+
+class CreateRepository extends BaseStub
 {
     private array $modelBinding;
-    private mixed $controllerPath;
+    private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)
     {
         $this->modelBinding = $modelBinding;
-        if ($controllerPath === '') {
-            $this->controllerPath = '';
-        } else {
-            $this->controllerPath = '\\' . str_replace('/', '\\', $controllerPath);
-        }
+        $this->namespace = str_replace('/', '\\', $controllerPath);
     }
 
     public function generate(): string
     {
-        $className = $this->modelBinding['className'];
+        $className        = $this->modelBinding['className'];            // Original model class name, e.g., "Order"
+        $classVar         = lcfirst($className);                         // e.g., "order"
+        $classNamePlural  = $this->pluralize($className);                // e.g., "Orders"
+        $classNameCamel   = $this->toCamelCase($classNamePlural);        // e.g., "orders" => "orders" (camelCase)
+        $classNameTitle   = ucfirst($classNamePlural);                   // e.g., "Orders"
+        $methodNameSuffix = ucfirst($classNameCamel);                    // e.g., "Orders" (used in getXXXData)
+        $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 
         return "<?php
 
-namespace App\Repositories\V1$this->controllerPath;
+namespace App\Repositories\\{$this->namespace};
 
-use App\Models\\{$className};
-use Illuminate\Database\Eloquent\Builder;
-
-class {$className}BaseRepository
+use App\Models\\{$modelNameSpace}\\{$className};
+use App\Repositories\V1\BaseRepository;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
+use Exception;
+/**
+ * {$className}-specific data access operations.
+ *
+ * This repository ONLY handles database queries.
+ * Business logic belongs in {$className}Service.
+ */
+class {$className}Repository extends BaseRepository
 {
-    public function query(): Builder
+    public function __construct({$className} \$model, protected Request \$request)
     {
-        return {$className}::query();
+        parent::__construct(\$model, \$request);
     }
 
-    public function findById(string \$id)
+
+    /**
+     * @throws Exception
+     * Get data for {$classNameTitle}.
+     */
+    public function get{$methodNameSuffix}Data(array \$with = []): array
     {
-        return {$className}::find(\$id);
+        \$query = \$this->query();
+
+        //  apply custom query if needed before passing to handleApiQueryRequest
+        // \$query->where('status', true);
+
+        return \$this->handleApiQueryRequest(\$query, \$with);
     }
 
-    public function create(array \$data)
+    /**
+     * Find by slug (common lookup pattern).
+     */
+    public function findBySlug(string \$slug): ?{$className}
     {
-        return {$className}::create(\$data);
+        return \$this->query()
+            ->where('slug', \$slug)
+            ->first();
     }
 
-    public function update({$className} \$model, array \$data)
+    /**
+     * Get {$classVar}s by IDs (useful for bulk operations).
+     */
+    public function findMany(array \$ids): Collection
     {
-        \$model->update(\$data);
-        return \$model->fresh();
+        return \$this->query()
+            ->whereIn('id', \$ids)
+            ->get();
     }
 
-    public function delete({$className} \$model): bool
+    /**
+     * Get active {$classVar}s.
+     */
+    public function getActive(): Collection
     {
-        return \$model->delete();
+        return \$this->query()
+            ->where('isActive', true)
+            ->orderBy('createdAt', 'desc')
+            ->get();
     }
 }
         ";
