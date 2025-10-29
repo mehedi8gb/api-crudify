@@ -126,7 +126,7 @@ final class {$className}Service extends BaseService
     /**
      * Post-creation operations.
      */
-    protected function afterCreate(Model \$model): void
+    protected function afterCreate(Model \$model, array \$rawData): void
     {
         // Example: Fire event, invalidate cache, log activity
         // event(new {$className}Created(\$model));
