@@ -18,6 +18,7 @@ class CreateFeatureTest extends BaseStub
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
+        $factoryClassName = $className . 'Factory';
         $classVar = lcfirst($className);
         $classNamePlural = $this->pluralize(strtolower($className));
         $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
@@ -26,7 +27,7 @@ class CreateFeatureTest extends BaseStub
 
 namespace Tests\Feature\\{$this->namespace};
 
-use App\Models\\{$modelNameSpace}\\{$className};
+use Database\Factories\\{$modelNameSpace}\\{$factoryClassName};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class {$className}Test extends TestCase
      */
     public function test_can_list_{$classNamePlural}(): void
     {
-        {$className}::factory()->count(3)->create();
+        {$factoryClassName}::times(3)->create();
 
         \$response = \$this->getJson('/api/v1/{$classNamePlural}');
 
@@ -81,7 +82,7 @@ class {$className}Test extends TestCase
      */
     public function test_can_show_{$classVar}(): void
     {
-        \${$classVar} = {$className}::factory()->create();
+        \${$classVar} = {$factoryClassName}::new()->create();
 
         \$response = \$this->getJson('/api/v1/{$classNamePlural}/' . \${$classVar}->id);
 
@@ -97,7 +98,7 @@ class {$className}Test extends TestCase
      */
     public function test_can_update_{$classVar}(): void
     {
-        \${$classVar} = {$className}::factory()->create();
+        \${$classVar} = {$factoryClassName}::new()->create();
 
         \$data = [
             'name' => 'Updated {$className}',
@@ -121,7 +122,7 @@ class {$className}Test extends TestCase
      */
     public function test_can_delete_{$classVar}(): void
     {
-        \${$classVar} = {$className}::factory()->create();
+        \${$classVar} = {$factoryClassName}::new()->create();
 
         \$response = \$this->deleteJson('/api/v1/{$classNamePlural}/' . \${$classVar}->id);
 
