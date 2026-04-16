@@ -7,6 +7,7 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateFeatureTest extends BaseStub
 {
     private array $modelBinding;
+
     private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)
@@ -18,7 +19,7 @@ class CreateFeatureTest extends BaseStub
     public function generate(): string
     {
         $className = $this->modelBinding['className'];
-        $factoryClassName = $className . 'Factory';
+        $factoryClassName = $className.'Factory';
         $classVar = lcfirst($className);
         $classNamePlural = $this->pluralize(strtolower($className));
         $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);

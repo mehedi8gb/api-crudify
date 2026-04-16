@@ -7,6 +7,7 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateResource extends BaseStub
 {
     private array $modelBinding;
+
     private string $namespace;
 
     public function __construct(array $modelBinding, string $domainPath)
@@ -19,7 +20,7 @@ class CreateResource extends BaseStub
     {
         $className = $this->modelBinding['className'];
         $classVar = lcfirst($className);
-        $resourceId = $this->toCamelCase($classVar) . 'Id';
+        $resourceId = $this->toCamelCase($classVar).'Id';
 
         return "<?php
 

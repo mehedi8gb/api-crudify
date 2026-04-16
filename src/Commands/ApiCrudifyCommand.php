@@ -19,7 +19,9 @@ use Mehedi8gb\ApiCrudify\Stubs\CreateService;
 class ApiCrudifyCommand extends Command
 {
     protected $signature = 'crudify:make {name} {--export-api-schema}';
+
     protected $description = 'Create a new CRUD with Service-Repository pattern';
+
     protected array $hasFile = [
         'controller' => false,
         'model' => false,
@@ -72,6 +74,7 @@ class ApiCrudifyCommand extends Command
         if ($this->isFileExists($fileName)) {
             $this->hasFile['controller'] = true;
             $this->warn("Controller already exists: {$fileName}");
+
             return;
         }
 
@@ -86,13 +89,14 @@ class ApiCrudifyCommand extends Command
         $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
 
         // Safely build the model path
-        $modelDir = $dir ? "Models/{$dir}" : "Models";
+        $modelDir = $dir ? "Models/{$dir}" : 'Models';
         $fileName = app_path("{$modelDir}/{$modelBinding['className']}.php");
         $this->createDirectoryIfNotExists($fileName);
 
         if ($this->isFileExists($fileName)) {
             $this->hasFile['model'] = true;
             $this->warn("Model already exists: {$fileName}");
+
             return;
         }
 
@@ -109,6 +113,7 @@ class ApiCrudifyCommand extends Command
         if ($this->isFileExists($fileName)) {
             $this->hasFile['service'] = true;
             $this->warn("Service already exists: {$fileName}");
+
             return;
         }
 
@@ -125,6 +130,7 @@ class ApiCrudifyCommand extends Command
         if ($this->isFileExists($fileName)) {
             $this->hasFile['repository'] = true;
             $this->warn("Repository already exists: {$fileName}");
+
             return;
         }
 
@@ -141,7 +147,7 @@ class ApiCrudifyCommand extends Command
 
         $this->createDirectoryIfNotExists($storeFile);
 
-        if (!$this->isFileExists($storeFile)) {
+        if (! $this->isFileExists($storeFile)) {
             $content = (new CreateFormRequest($modelBinding, $domainPath))->generateStore();
             file_put_contents($storeFile, $content);
             $this->info("✓ Store Request created: {$storeFile}");
@@ -150,7 +156,7 @@ class ApiCrudifyCommand extends Command
             $this->warn("Store Request already exists: {$storeFile}");
         }
 
-        if (!$this->isFileExists($updateFile)) {
+        if (! $this->isFileExists($updateFile)) {
             $content = (new CreateFormRequest($modelBinding, $domainPath))->generateUpdate();
             file_put_contents($updateFile, $content);
             $this->info("✓ Update Request created: {$updateFile}");
@@ -169,6 +175,7 @@ class ApiCrudifyCommand extends Command
         if ($this->isFileExists($fileName)) {
             $this->hasFile['resource'] = true;
             $this->warn("Resource already exists: {$fileName}");
+
             return;
         }
 
@@ -180,14 +187,15 @@ class ApiCrudifyCommand extends Command
     private function generateMigration(array $modelBinding): void
     {
         $tableName = Str::snake(Str::pluralStudly($modelBinding['className']));
-        $migrationFileName = database_path("migrations/" . date('Y_m_d_His') . "_create_{$tableName}_table.php");
+        $migrationFileName = database_path('migrations/'.date('Y_m_d_His')."_create_{$tableName}_table.php");
         $substringToMatch = "_create_{$tableName}_table.php";
 
-        $files = scandir(database_path("migrations"));
+        $files = scandir(database_path('migrations'));
         foreach ($files as $file) {
             if (str_contains($file, $substringToMatch)) {
                 $this->hasFile['migration'] = true;
                 $this->warn("Migration already exists: {$file}");
+
                 return;
             }
         }
@@ -200,13 +208,14 @@ class ApiCrudifyCommand extends Command
     private function generateFactory(array $modelBinding, string $domainPath): void
     {
         $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
-        $factoryDir = $dir ? "factories/{$dir}" : "factories";
+        $factoryDir = $dir ? "factories/{$dir}" : 'factories';
         $fileName = database_path("{$factoryDir}/{$modelBinding['className']}Factory.php");
         $this->createDirectoryIfNotExists($fileName);
 
         if ($this->isFileExists($fileName)) {
             $this->hasFile['factory'] = true;
             $this->warn("Factory already exists: {$fileName}");
+
             return;
         }
 
@@ -223,6 +232,7 @@ class ApiCrudifyCommand extends Command
         if ($this->isFileExists($fileName)) {
             $this->hasFile['test'] = true;
             $this->warn("Test already exists: {$fileName}");
+
             return;
         }
 
@@ -231,42 +241,13 @@ class ApiCrudifyCommand extends Command
         $this->info("✓ Feature Test created: {$fileName}");
     }
 
-//    private function generateSeederClass(array $modelBinding): void
-//    {
-//        $seederFile = database_path("seeders/DatabaseSeeder.php");
-//        $seederContent = file_get_contents($seederFile);
-//        $className = $modelBinding['className'];
-//
-//        if (!str_contains($seederContent, "use App\Models\\{$className}")) {
-//            $seederContent = preg_replace(
-//                '/namespace Database\\\\Seeders;/',
-//                "namespace Database\\Seeders;\n\nuse App\Models\\{$className};",
-//                $seederContent,
-//                1
-//            );
-//        }
-//
-//        if (!str_contains($seederContent, "{$className}::factory()->count(10)->create();")) {
-//            $seederContent = preg_replace(
-//                '/public\s+function\s+run\s*\(\s*\): void\s*{/',
-//                "public function run(): void\n    {\n        {$className}::factory()->count(10)->create();",
-//                $seederContent,
-//                1
-//            );
-//            file_put_contents($seederFile, $seederContent);
-//            $this->info("✓ Seeder added to DatabaseSeeder");
-//        } else {
-//            $this->warn("Seeder already exists in DatabaseSeeder");
-//        }
-//    }
-
     private function generateSeederClass(array $modelBinding, $domainPath): void
     {
         // Normalize and sanitize the namespace
         $dir = BaseStub::normalizeNamespaceSanitize($domainPath);
 
         // Safely build the seeder path
-        $seederDir = $dir ? "seeders/{$dir}" : "seeders";
+        $seederDir = $dir ? "seeders/{$dir}" : 'seeders';
         $fileName = database_path("{$seederDir}/{$modelBinding['className']}Seeder.php");
         $this->createDirectoryIfNotExists($fileName);
 
@@ -281,9 +262,9 @@ class ApiCrudifyCommand extends Command
         }
 
         // 2️⃣ Now Register it Inside DatabaseSeeder.php
-        $databaseSeederFile = database_path("seeders/DatabaseSeeder.php");
+        $databaseSeederFile = database_path('seeders/DatabaseSeeder.php');
 
-        if (!file_exists($databaseSeederFile)) {
+        if (! file_exists($databaseSeederFile)) {
             // If missing, create the base DatabaseSeeder file
             $baseSeederContent = <<<PHP
 <?php
@@ -305,16 +286,17 @@ class DatabaseSeeder extends Seeder
 PHP;
             file_put_contents($databaseSeederFile, $baseSeederContent);
             $this->info("✓ Created new DatabaseSeeder and registered {$modelBinding['className']}Seeder");
+
             return;
         }
 
         // Read current content
         $content = file_get_contents($databaseSeederFile);
         $seederClass = "{$modelBinding['className']}Seeder";
-        $seederClassWithDomain = ($dir ? $dir . '\\' : '') . $seederClass;
+        $seederClassWithDomain = ($dir ? $dir.'\\' : '').$seederClass;
 
         // Add `use` statement if not exists
-        if (!str_contains($content, "use Database\\Seeders\\{$seederClassWithDomain};")) {
+        if (! str_contains($content, "use Database\\Seeders\\{$seederClassWithDomain};")) {
             $content = preg_replace(
                 '/namespace Database\\\\Seeders;/',
                 "namespace Database\\Seeders;\n\nuse Database\\Seeders\\{$seederClassWithDomain};",
@@ -327,16 +309,16 @@ PHP;
         if (preg_match('/\$this->call\s*\(\s*\[(.*?)]\s*\)\s*;/s', $content, $matches)) {
             $existing = trim($matches[1]);
 
-            if (!str_contains($existing, $seederClass)) {
+            if (! str_contains($existing, $seederClass)) {
                 // Rebuild $this->call([...]) with proper formatting
-                $allSeeders = array_filter(array_map(function($line) {
+                $allSeeders = array_filter(array_map(function ($line) {
                     return rtrim(trim($line), ','); // remove spaces + trailing comma
                 }, explode("\n", $existing)));
                 $allSeeders[] = "{$seederClass}::class";
 
                 // Proper indentation and newlines
-                $formattedSeeders = "            " . implode(",\n            ", $allSeeders) . ",";
-                $newCallBlock = "\n" . $formattedSeeders . "\n        "; // opening and closing brackets indentation
+                $formattedSeeders = '            '.implode(",\n            ", $allSeeders).',';
+                $newCallBlock = "\n".$formattedSeeders."\n        "; // opening and closing brackets indentation
 
                 // Replace old block
                 $content = str_replace($matches[1], $newCallBlock, $content);
@@ -366,6 +348,7 @@ PHP;
             $this->info("✓ Added run() method and registered {$seederClass}");
         }
     }
+
     private function updateRoutesFile(array $modelBinding, string $domainPath, string $controllerName): void
     {
         $routeFile = base_path('routes/api.php');
@@ -384,16 +367,9 @@ PHP;
 
         if (str_contains($routeContent, "Route::apiResource('{$prefix}{$routeName}', {$controllerClass}::class);")) {
             $this->warn("Route already exists for: {$routeName}");
+
             return;
         }
-
-//        $routeContent .= "\nRoute::prefix('{$routeName}')->group(function () {
-//    Route::get('/', [{$controllerClass}::class, 'index'])->name('{$routeName}.index');
-//    Route::get('show/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'show'])->name('{$routeName}.show');
-//    Route::post('store', [{$controllerClass}::class, 'store'])->name('{$routeName}.store');
-//    Route::put('update/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'update'])->name('{$routeName}.update');
-//    Route::delete('destroy/{" . Str::singular($routeName) . "}', [{$controllerClass}::class, 'destroy'])->name('{$routeName}.destroy');
-//});\n";
 
         $routeContent .= "\nRoute::apiResource('{$prefix}{$routeName}', {$controllerClass}::class);\n";
 
@@ -421,13 +397,13 @@ PHP;
 
     private function displaySummary(): void
     {
-        $allFilesExist = !in_array(false, $this->hasFile, true);
+        $allFilesExist = ! in_array(false, $this->hasFile, true);
 
         if ($allFilesExist) {
             $this->warn("\n⚠️  All files already exist.");
         } elseif (in_array(true, $this->hasFile, true)) {
             $this->info("\n✨ Some files created successfully.");
-            $this->warn("⚠️  Some files already existed.");
+            $this->warn('⚠️  Some files already existed.');
         } else {
             $this->info("\n✨ CRUD created successfully!");
         }
@@ -442,7 +418,7 @@ PHP;
     private function createDirectoryIfNotExists(string $fileName): void
     {
         $directory = dirname($fileName);
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
         }
     }
@@ -454,15 +430,16 @@ PHP;
 
     private function formatControllerName(string $name): string
     {
-        return str_contains($name, 'Controller') ? $name : $name . 'Controller';
+        return str_contains($name, 'Controller') ? $name : $name.'Controller';
     }
 
     private function getModelBinding(string $controllerName): array
     {
         $className = str_replace('Controller', '', $controllerName);
+
         return [
             'className' => $className,
-            'classVar' => ' '. Str::lower($className),
+            'classVar' => ' '.Str::lower($className),
         ];
     }
 }
