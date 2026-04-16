@@ -7,6 +7,7 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateSeeder extends BaseStub
 {
     private array $modelBinding;
+
     private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)

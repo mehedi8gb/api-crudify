@@ -7,6 +7,7 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateRepository extends BaseStub
 {
     private array $modelBinding;
+
     private string $namespace;
 
     public function __construct(array $modelBinding, string $controllerPath)
@@ -17,11 +18,11 @@ class CreateRepository extends BaseStub
 
     public function generate(): string
     {
-        $className        = $this->modelBinding['className'];            // Original model class name, e.g., "Order"
-        $classVar         = lcfirst($className);                         // e.g., "order"
-        $classNamePlural  = $this->pluralize($className);                // e.g., "Orders"
-        $classNameCamel   = $this->toCamelCase($classNamePlural);        // e.g., "orders" => "orders" (camelCase)
-        $classNameTitle   = ucfirst($classNamePlural);                   // e.g., "Orders"
+        $className = $this->modelBinding['className'];            // Original model class name, e.g., "Order"
+        $classVar = lcfirst($className);                         // e.g., "order"
+        $classNamePlural = $this->pluralize($className);                // e.g., "Orders"
+        $classNameCamel = $this->toCamelCase($classNamePlural);        // e.g., "orders" => "orders" (camelCase)
+        $classNameTitle = ucfirst($classNamePlural);                   // e.g., "Orders"
         $methodNameSuffix = ucfirst($classNameCamel);                    // e.g., "Orders" (used in getXXXData)
         $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
 

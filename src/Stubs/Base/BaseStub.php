@@ -2,35 +2,10 @@
 
 namespace Mehedi8gb\ApiCrudify\Stubs\Base;
 
-use BadMethodCallException;
 use Illuminate\Support\Str;
 
 class BaseStub
 {
-//    public string $testOutput;
-//    public function __construct()
-//    {
-//        $paths = [
-//            'V1/Sales',
-//            'v2/Inventory',
-//            'Domains/V3/Product',
-//            'v12/Orders',
-//            'Admin/V1/Users',
-//            ' V1 / Sales ',
-//            '\\V4\\Billing',
-//        ];
-//
-//        $result = '';
-//
-//        foreach ($paths as $path) {
-//            $normalized = self::normalizeNamespace($path);
-//            $result .= $path . " => " . $normalized . PHP_EOL;
-//        }
-//
-//        // Store results for later echo or debugging
-//        $this->testOutput = $result;
-//    }
-
     protected function pluralize(string $word): string
     {
         if (str_ends_with($word, 'y')) {
@@ -56,7 +31,9 @@ class BaseStub
      */
     public static function normalizeNamespace(string $controllerPath): string
     {
-        if (!$controllerPath) return '';
+        if (! $controllerPath) {
+            return '';
+        }
         // Step 1: Normalize all slashes and remove extra spaces
         $controllerPath = trim($controllerPath);
         $controllerPath = str_replace('\\', '/', $controllerPath);
@@ -76,11 +53,9 @@ class BaseStub
         // Step 5: Rebuild as namespace
         return implode('\\', $segments);
     }
+
     /**
      * Normalize a namespace path to get the main directory.
-     *
-     * @param string $controllerPath
-     * @return string
      */
     public function normalizeNamespaceToGetSingleDirectory(string $controllerPath): string
     {
@@ -105,7 +80,7 @@ class BaseStub
 
         // Step 4: Take only the last remaining segment (main directory)
         $segments = array_values($segments);
+
         return $segments ? end($segments) : 'Default';
     }
-
 }

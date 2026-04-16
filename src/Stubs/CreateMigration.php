@@ -7,11 +7,9 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateMigration extends BaseStub
 {
     private string $modelBinding;
+
     private string $pluralTableName;
 
-    /**
-     * @param array $modelBinding
-     */
     public function __construct(array $modelBinding)
     {
         $this->modelBinding = strtolower($modelBinding['className']);

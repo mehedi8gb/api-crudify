@@ -8,6 +8,7 @@ use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 class CreateModel extends BaseStub
 {
     private array $modelBinding;
+
     private string $namespace;
 
     public function __construct(array $modelBinding, string $domainPath)
@@ -21,7 +22,7 @@ class CreateModel extends BaseStub
         $className = $this->modelBinding['className'];
         $tableName = strtolower($className); // 'user'
         $pluralTableName = $this->pluralize($tableName);
-        $primaryKey = Str::camel($className) . 'Id';
+        $primaryKey = Str::camel($className).'Id';
 
         return "<?php
 
