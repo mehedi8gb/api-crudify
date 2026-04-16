@@ -6,30 +6,6 @@ use Illuminate\Support\Str;
 
 class BaseStub
 {
-    //    public string $testOutput;
-    //    public function __construct()
-    //    {
-    //        $paths = [
-    //            'V1/Sales',
-    //            'v2/Inventory',
-    //            'Domains/V3/Product',
-    //            'v12/Orders',
-    //            'Admin/V1/Users',
-    //            ' V1 / Sales ',
-    //            '\\V4\\Billing',
-    //        ];
-    //
-    //        $result = '';
-    //
-    //        foreach ($paths as $path) {
-    //            $normalized = self::normalizeNamespace($path);
-    //            $result .= $path . " => " . $normalized . PHP_EOL;
-    //        }
-    //
-    //        // Store results for later echo or debugging
-    //        $this->testOutput = $result;
-    //    }
-
     protected function pluralize(string $word): string
     {
         if (str_ends_with($word, 'y')) {

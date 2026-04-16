@@ -4,6 +4,7 @@ namespace Mehedi8gb\ApiCrudify\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Mehedi8gb\ApiCrudify\Services\BaseClassRestorerService;
 use Mehedi8gb\ApiCrudify\Stubs\Base\BaseStub;
 use Mehedi8gb\ApiCrudify\Stubs\CreateController;
 use Mehedi8gb\ApiCrudify\Stubs\CreateFactory;
@@ -38,7 +39,7 @@ class ApiCrudifyCommand extends Command
     public function handle(): void
     {
         $fullPath = $this->argument('name');
-
+        $this->info("DEV MODE");
         // Parse: V1/Inventory/Specification -> ['V1/Inventory', 'Specification']
         $pathParts = explode('/', $fullPath);
         $className = array_pop($pathParts);
@@ -49,6 +50,14 @@ class ApiCrudifyCommand extends Command
 
         $this->info("\n Generating CRUD for: {$className}");
         $this->info("📁 Domain Path: {$domainPath}");
+
+        // Ensure base classes exist
+        $restorer = new BaseClassRestorerService($this);
+        $anyRestored = $restorer->ensureBaseClassesExist();
+
+        if ($anyRestored) {
+            $this->newLine();
+        }
 
         // Create all components
         $this->generateController($modelBinding, $domainPath);
