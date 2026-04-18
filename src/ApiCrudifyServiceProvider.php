@@ -3,6 +3,7 @@
 namespace Mehedi8gb\ApiCrudify;
 
 use Mehedi8gb\ApiCrudify\Commands\ApiCrudifyCommand;
+use Mehedi8gb\ApiCrudify\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -17,7 +18,8 @@ class ApiCrudifyServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('api-crudify')
-            ->hasCommand(ApiCrudifyCommand::class);
+            ->hasCommand(ApiCrudifyCommand::class)
+            ->hasCommand(InstallCommand::class);
 
     }
 }
