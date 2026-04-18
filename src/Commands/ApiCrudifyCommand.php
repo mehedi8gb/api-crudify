@@ -2,14 +2,12 @@
 
 namespace Mehedi8gb\ApiCrudify\Commands;
 
-use Illuminate\Console\Command;
-use Mehedi8gb\ApiCrudify\Services\BaseClassRestorerService;
 use Mehedi8gb\ApiCrudify\Services\ComponentGeneratorService;
 use Mehedi8gb\ApiCrudify\Services\FileSystemHelper;
 use Mehedi8gb\ApiCrudify\Services\NamingHelper;
 use Mehedi8gb\ApiCrudify\Services\RouteManagerService;
 
-class ApiCrudifyCommand extends Command
+class ApiCrudifyCommand extends BaseCommand
 {
     protected $signature = 'crudify:make {name} {--export-api-schema}';
 
@@ -37,7 +35,6 @@ class ApiCrudifyCommand extends Command
         $this->initializeServices();
 
         $fullPath = $this->argument('name');
-        $this->info("DEV MODE");
         // Parse: V1/Inventory/Specification -> ['V1/Inventory', 'Specification']
         $pathParts = explode('/', $fullPath);
         $className = array_pop($pathParts);
@@ -50,12 +47,7 @@ class ApiCrudifyCommand extends Command
         $this->info("📁 Domain Path: {$domainPath}");
 
         // Ensure base classes exist
-        $restorer = new BaseClassRestorerService($this);
-        $anyRestored = $restorer->ensureBaseClassesExist();
-
-        if ($anyRestored) {
-            $this->newLine();
-        }
+        $this->restoreBaseClasses();
 
         // Create all components
         $this->hasFile['controller'] = $this->componentGenerator->generateController($modelBinding, $domainPath);

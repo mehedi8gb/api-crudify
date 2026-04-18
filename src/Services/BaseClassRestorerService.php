@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\File;
 class BaseClassRestorerService
 {
     protected Command $command;
+    protected array $restored = [];
+    protected array $skipped = [];
 
     public function __construct(Command $command)
     {
@@ -17,11 +19,10 @@ class BaseClassRestorerService
     /**
      * Ensure all base classes and dependencies exist in the project.
      *
-     * @return bool True if any file was restored.
+     * @return array True if any file was restored.
      */
-    public function ensureBaseClassesExist(): bool
+    public function ensureBaseClassesExist(): array
     {
-        $anyRestored = false;
 
         $filesToRestore = [
             // Repositories
@@ -29,6 +30,9 @@ class BaseClassRestorerService
             app_path('IContracts/Repositories/IReadRepository.php') => 'IContracts/Repositories/IReadRepository.php',
             app_path('IContracts/Repositories/IWriteRepository.php') => 'IContracts/Repositories/IWriteRepository.php',
             app_path('Repositories/V1/BaseRepository.php') => 'Repositories/V1/BaseRepository.php',
+
+            // Base
+            app_path('Http/Controllers/V1/BaseController.php') => 'Http/Controllers/V1/BaseController.php',
 
             // Services
             app_path('IContracts/Services/IService.php') => 'IContracts/Services/IService.php',
@@ -63,36 +67,42 @@ class BaseClassRestorerService
 
             // Helpers files
             app_path('Helpers/Helpers.php') => 'Helpers/Helpers.php',
+            app_path('Helpers/SearchParamMapper.php') => 'Helpers/SearchParamMapper.php',
         ];
 
         foreach ($filesToRestore as $destinationPath => $stubPath) {
-            if (!File::exists($destinationPath)) {
-                $this->restoreFile($destinationPath, $stubPath);
-                $anyRestored = true;
+            if (! File::exists($destinationPath)) {
+                $success = $this->restoreFile($destinationPath, $stubPath);
+                $this->restored[] = [basename($destinationPath), $stubPath, $success ? '✓ Restored' : '✗ Failed'];
+            } else {
+                $this->skipped[] = [basename($destinationPath), $stubPath, '— Existed'];
             }
         }
 
-        return $anyRestored;
+        return [
+            'restored' => $this->restored,
+            'skipped' => $this->skipped,
+        ];
     }
 
-    protected function restoreFile(string $destinationPath, string $stubPath): void
+    protected function restoreFile(string $destinationPath, string $stubPath): bool
     {
-        $fullStubPath = __DIR__ . '/../Stubs/Core/' . $stubPath;
+        $fullStubPath = __DIR__.'/../Stubs/Core/'.$stubPath;
 
-        if (!File::exists($fullStubPath)) {
+        if (! File::exists($fullStubPath)) {
             // Logically should not happen if all stubs are correctly placed in the package
             $this->command->error("Stub not found: {$stubPath}");
-            return;
+
+            return false;
         }
 
         $directory = dirname($destinationPath);
-        if (!File::isDirectory($directory)) {
+        if (! File::isDirectory($directory)) {
             File::makeDirectory($directory, 0755, true);
         }
 
         File::copy($fullStubPath, $destinationPath);
 
-        $fileName = basename($destinationPath);
-        $this->command->info("✓ {$fileName} restored");
+        return true;
     }
 }
