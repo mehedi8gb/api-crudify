@@ -7,7 +7,6 @@ use App\Core\Query\Handlers\Core\PaginationHandler;
 use App\Core\Query\Handlers\Core\RelationHandler;
 use App\Core\Query\Handlers\Core\SoftDeleteHandler;
 use App\Core\Query\Handlers\Core\SortHandler;
-use App\Core\Query\Handlers\Optimization\CacheHandler;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -22,7 +21,6 @@ class HandleApiQueryRequest
         $relations  = new RelationHandler($with);
         $filters    = new FilterHandler();
         $sort       = new SortHandler();
-//        $cache      = new CacheHandler();
         $pagination = new PaginationHandler();
 
         // build chain order
@@ -30,7 +28,6 @@ class HandleApiQueryRequest
             ->setNext($relations)
             ->setNext($filters)
             ->setNext($sort)
-//            ->setNext($cache)
             ->setNext($pagination);
 
         // start chain

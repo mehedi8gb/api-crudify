@@ -18,14 +18,12 @@ class HandleClientApiQueryRequest
         // responsibility chain
         $relations  = new ClientRelationHandler($with);
         $sort       = new ClientSortHandler();
-        //        $cache      = new CacheHandler();
         $pagination = new ClientPaginationHandler();
 
         // build chain order
         $relations
             ->setNext($relations)
             ->setNext($sort)
-            //            ->setNext($cache)
             ->setNext($pagination);
 
         // start chain
