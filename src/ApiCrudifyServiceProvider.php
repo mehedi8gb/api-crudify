@@ -2,9 +2,6 @@
 
 namespace Mehedi8gb\ApiCrudify;
 
-use AndreasElia\PostmanGenerator\PostmanGeneratorServiceProvider;
-use Cviebrock\EloquentSluggable\ServiceProvider;
-use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 use Mehedi8gb\ApiCrudify\Commands\ApiCrudifyCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -21,11 +18,6 @@ class ApiCrudifyServiceProvider extends PackageServiceProvider
         $package
             ->name('api-crudify')
             ->hasCommand(ApiCrudifyCommand::class);
-        //                LaravelServiceProvider::defaultProviders()->merge([
-        //                ApiCrudifyServiceProvider::class,
-        //                PostmanGeneratorServiceProvider::class,
-        //                ServiceProvider::class,
-        //            ]);
 
     }
 }

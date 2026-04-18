@@ -57,6 +57,12 @@ class BaseClassRestorerService
             app_path('Core/ClientQuery/Handlers/Core/ClientRelationHandler.php') => 'Core/ClientQuery/Handlers/Core/ClientRelationHandler.php',
             app_path('Core/ClientQuery/Handlers/Core/ClientSortHandler.php') => 'Core/ClientQuery/Handlers/Core/ClientSortHandler.php',
             app_path('Core/ClientQuery/HandleClientApiQueryRequest.php') => 'Core/ClientQuery/HandleClientApiQueryRequest.php',
+
+            // Default Resource
+            app_path('Http/Resources/DefaultResource.php') => 'Http/Resources/DefaultResource.php',
+
+            // Helpers files
+            app_path('Helpers/Helpers.php') => 'Helpers/Helpers.php',
         ];
 
         foreach ($filesToRestore as $destinationPath => $stubPath) {
