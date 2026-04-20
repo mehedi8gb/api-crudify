@@ -24,12 +24,13 @@ class CreateController extends BaseStub
         $classNamePluralTitle = ucfirst($classNamePlural);
         $serviceClass = "{$className}Service";
         $modelNameSpace = $this->normalizeNamespaceToGetSingleDirectory($this->namespace);
+        $versionNamespace = explode('\\', $this->namespace)[0] ?: 'V1';
 
         return "<?php
 
 namespace App\Http\Controllers\\{$this->namespace};
 
-use App\Http\Controllers\V1\BaseController;
+use App\Http\Controllers\\{$versionNamespace}\\Controller;
 use App\Http\Requests\\{$this->namespace}\\{$className}\\{$className}StoreRequest;
 use App\Http\Requests\\{$this->namespace}\\{$className}\\{$className}UpdateRequest;
 use App\Http\Resources\\{$this->namespace}\\{$className}\\{$className}Resource;
@@ -53,7 +54,7 @@ use Throwable;
  * - Business logic (service's job)
  * - Database queries (repository's job)
  */
-final class {$className}Controller extends BaseController
+final class {$className}Controller extends Controller
 {
     public function __construct(
         private readonly {$serviceClass} \$service

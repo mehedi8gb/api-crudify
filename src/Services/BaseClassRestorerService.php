@@ -21,8 +21,9 @@ class BaseClassRestorerService
      *
      * @return array True if any file was restored.
      */
-    public function ensureBaseClassesExist(): array
+    public function ensureBaseClassesExist(?string $domainPath = null): array
     {
+        $version = $this->resolveVersionFromDomainPath($domainPath);
 
         $filesToRestore = [
             // Repositories
@@ -32,7 +33,7 @@ class BaseClassRestorerService
             app_path('Repositories/V1/BaseRepository.php') => 'Repositories/V1/BaseRepository.php',
 
             // Base
-            app_path('Http/Controllers/V1/BaseController.php') => 'Http/Controllers/V1/BaseController.php',
+            app_path("Http/Controllers/{$version}/Controller.php") => "Http/Controllers/{$version}/Controller.php",
 
             // Services
             app_path('IContracts/Services/IService.php') => 'IContracts/Services/IService.php',
@@ -72,9 +73,9 @@ class BaseClassRestorerService
         foreach ($filesToRestore as $destinationPath => $stubPath) {
             if (! File::exists($destinationPath)) {
                 $success = $this->restoreFile($destinationPath, $stubPath);
-                $this->restored[] = [basename($destinationPath), $stubPath, $success ? '✓ Restored' : '✗ Failed'];
+                $this->restored[] = [basename($destinationPath), $this->toProjectRelativePath($destinationPath), $success ? '✓ Restored' : '✗ Failed'];
             } else {
-                $this->skipped[] = [basename($destinationPath), $stubPath, '— Existed'];
+                $this->skipped[] = [basename($destinationPath), $this->toProjectRelativePath($destinationPath), '— Existed'];
             }
         }
 
@@ -87,6 +88,10 @@ class BaseClassRestorerService
     protected function restoreFile(string $destinationPath, string $stubPath): bool
     {
         $fullStubPath = __DIR__.'/../Stubs/Core/'.$stubPath;
+
+        if (! File::exists($fullStubPath) && str_contains($stubPath, 'Http/Controllers/')) {
+            $fullStubPath = __DIR__.'/../Stubs/Core/Http/Controllers/V1/Controller.php';
+        }
 
         if (! File::exists($fullStubPath)) {
             // Logically should not happen if all stubs are correctly placed in the package
@@ -102,6 +107,66 @@ class BaseClassRestorerService
 
         File::copy($fullStubPath, $destinationPath);
 
+        $normalizedPath = str_replace('\\', '/', $destinationPath);
+        if (str_contains($normalizedPath, 'Http/Controllers/')) {
+            $this->syncControllerNamespace($destinationPath);
+        }
+
         return true;
+    }
+
+    protected function resolveVersionFromDomainPath(?string $domainPath): string
+    {
+        if (! is_string($domainPath) || trim($domainPath) === '') {
+            return 'V1';
+        }
+
+        $parts = explode('/', str_replace('\\', '/', $domainPath));
+        $candidate = strtoupper(trim($parts[0] ?? ''));
+
+        if (preg_match('/^V\d+$/', $candidate) === 1) {
+            return $candidate;
+        }
+
+        return 'V1';
+    }
+
+    protected function syncControllerNamespace(string $destinationPath): void
+    {
+        $normalizedPath = str_replace('\\', '/', $destinationPath);
+
+        if (! preg_match('/Http\/Controllers\/([^\/]+)\/Controller\.php$/', $normalizedPath, $matches)) {
+            return;
+        }
+
+        $version = $matches[1];
+        $content = file_get_contents($destinationPath);
+
+        if (! is_string($content)) {
+            return;
+        }
+
+        $updated = preg_replace(
+            '/namespace\s+App\\\\Http\\\\Controllers\\\\[^;]+;/',
+            "namespace App\\Http\\Controllers\\{$version};",
+            $content,
+            1
+        );
+
+        if (is_string($updated)) {
+            file_put_contents($destinationPath, $updated);
+        }
+    }
+
+    protected function toProjectRelativePath(string $absolutePath): string
+    {
+        $normalizedAbsolute = str_replace('\\', '/', $absolutePath);
+        $normalizedAppPath = rtrim(str_replace('\\', '/', app_path()), '/');
+
+        if (str_starts_with($normalizedAbsolute, $normalizedAppPath.'/')) {
+            return substr($normalizedAbsolute, strlen($normalizedAppPath) + 1);
+        }
+
+        return $normalizedAbsolute;
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\V1;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
+use Illuminate\Routing\Controller as LaravelController;
 use Symfony\Component\HttpFoundation\Response;
 
-abstract class BaseController extends Controller
+abstract class Controller extends LaravelController
 {
     // ==========================================
     // Response Helpers (DRY)
