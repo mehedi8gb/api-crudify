@@ -51,7 +51,6 @@ class BaseClassRestorerService
             app_path('Core/Query/Handlers/Core/RelationHandler.php') => 'Core/Query/Handlers/Core/RelationHandler.php',
             app_path('Core/Query/Handlers/Core/SoftDeleteHandler.php') => 'Core/Query/Handlers/Core/SoftDeleteHandler.php',
             app_path('Core/Query/Handlers/Core/SortHandler.php') => 'Core/Query/Handlers/Core/SortHandler.php',
-            app_path('Core/Query/Handlers/Optimization/CacheHandler.php') => 'Core/Query/Handlers/Optimization/CacheHandler.php',
             app_path('Core/Query/HandleApiQueryRequest.php') => 'Core/Query/HandleApiQueryRequest.php',
 
             // Client Query
