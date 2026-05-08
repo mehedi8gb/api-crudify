@@ -47,7 +47,7 @@ class ApiCrudifyCommand extends BaseCommand
         $this->info("📁 Domain Path: {$domainPath}");
 
         // Ensure base classes exist
-        $this->restoreBaseClasses();
+        $this->restoreBaseClasses($domainPath);
 
         // Create all components
         $this->hasFile['controller'] = $this->componentGenerator->generateController($modelBinding, $domainPath);

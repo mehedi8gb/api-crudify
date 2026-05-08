@@ -90,7 +90,7 @@ HTTP Request
      ▼
 ┌─────────────────────────────────┐
 │         Controller              │  ← HTTP only: validate, call service, return response
-│   (extends BaseController)      │
+│   (extends Controller)          │
 └──────────────┬──────────────────┘
                │
                ▼
@@ -117,7 +117,7 @@ HTTP Request
 
 **Controller** — HTTP only, no business logic:
 ```php
-final class ProductController extends BaseController
+final class ProductController extends Controller
 {
     public function __construct(
         private readonly ProductService $service

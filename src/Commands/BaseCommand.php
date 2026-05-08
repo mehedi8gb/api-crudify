@@ -7,10 +7,10 @@ use Mehedi8gb\ApiCrudify\Services\BaseClassRestorerService;
 
 abstract class BaseCommand extends Command
 {
-    protected function restoreBaseClasses(): void
+    protected function restoreBaseClasses(?string $domainPath = null): void
     {
         $restorer = new BaseClassRestorerService($this);
-        $results  = $restorer->ensureBaseClassesExist();
+        $results  = $restorer->ensureBaseClassesExist($domainPath);
 
         $restored = $results['restored'];
         $skipped  = $results['skipped'];
